@@ -46,7 +46,7 @@ def search_patients(name: str, db: Session = Depends(database.get_db)):
     id_results = db.query(models.Patient).filter(
         models.Patient.id.ilike(f"%{name}%")
     ).all()
-    return name_results + id_results
+    return set(name_results + id_results)
 
 @app.get("/api/patients/{patient_id}", response_model=schemas.Patient)
 def get_patient(patient_id: str, db: Session = Depends(database.get_db)):
