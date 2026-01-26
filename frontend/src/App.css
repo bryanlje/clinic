@@ -196,3 +196,104 @@ button {
   gap: 10px;
   margin-bottom: 10px;
 }
+
+/* --- PATIENT DETAIL HEADER --- */
+.patient-header {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-left: 5px solid var(--primary-color);
+}
+
+.patient-title h1 {
+  margin: 0;
+  font-size: 1.8rem;
+  color: #2c3e50;
+}
+
+.patient-meta {
+  display: flex;
+  gap: 15px;
+  margin-top: 20px;
+  color: #666;
+  font-size: 1.1rem;
+}
+
+.badge {
+  background: #e9ecef;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #495057;
+}
+
+/* --- COMPACT INFO GRID --- */
+.info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* 50% left, 50% right */
+  column-gap: 40px; /* Space between columns */
+  row-gap: 10px;    /* Space between rows (e.g. between Contact and Birth) */
+}
+
+/* On mobile, stack them vertically */
+@media (max-width: 768px) {
+  .info-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Edit Mode Input Styles */
+.edit-input {
+  width: 100%;
+  padding: 6px;
+  margin-bottom: 5px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+.edit-label {
+  font-size: 0.85rem;
+  color: #666;
+  font-weight: bold;
+  margin-bottom: 2px;
+  display: block;
+}
+
+/* --- CONFIRMATION MODAL --- */
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0, 0, 0, 0.5); /* Dimmed background */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-box {
+  background: white;
+  padding: 25px;
+  border-radius: 8px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+  min-width: 300px;
+  text-align: center;
+}
+
+.modal-title {
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin-bottom: 10px;
+  color: #333;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin-top: 20px;
+}
