@@ -687,10 +687,7 @@ function PatientDetailView({ patientId }) {
               className="badge"
               style={{ background: "#e3f2fd", color: "#0d47a1" }}
             >
-              Age:{" "}
-              {new Date().getFullYear() -
-                new Date(patient.date_of_birth).getFullYear()}
-              y
+              Age: {calculateAge(patient.date_of_birth)}
             </span>
           </div>
         </div>
@@ -831,7 +828,7 @@ function PatientDetailView({ patientId }) {
           <div className="info-grid">
             {/* Top Left: Basic Edit */}
             <div>
-              <h4 style={{ color: "#007bff" }}>Basic & Contact</h4>
+              <h4 style={{ color: "#004cd8" }}>Basic & Contact</h4>
               <label className="edit-label">Name</label>
               <input
                 className="edit-input"
@@ -878,7 +875,7 @@ function PatientDetailView({ patientId }) {
 
             {/* Top Right: Parents Edit */}
             <div>
-              <h4 style={{ color: "#007bff" }}>Parents</h4>
+              <h4 style={{ color: "#004cd8" }}>Parents</h4>
               <label className="edit-label">Father Name</label>
               <input
                 className="edit-input"
@@ -918,7 +915,7 @@ function PatientDetailView({ patientId }) {
 
             {/* Bottom Left: Birth Edit */}
             <div>
-              <h4 style={{ color: "#007bff" }}>Birth Details</h4>
+              <h4 style={{ color: "#004cd8" }}>Birth Details</h4>
               <label className="edit-label">Hospital</label>
               <input
                 className="edit-input"
@@ -973,7 +970,7 @@ function PatientDetailView({ patientId }) {
 
             {/* Bottom Right: Medical Edit */}
             <div>
-              <h4 style={{ color: "#007bff" }}>Medical Profile</h4>
+              <h4 style={{ color: "#004cd8" }}>Medical Profile</h4>
               <label className="edit-label">G6PD</label>
               <select
                 className="edit-input"
@@ -1069,20 +1066,17 @@ function PatientDetailView({ patientId }) {
           </div>
         )}
 
-        {!patient.visits || patient.visits.length === 0 ? (
-          <p style={{ color: "#999", fontStyle: "italic" }}>
-            No previous visits recorded.
-          </p>
+        {(!patient.visits || patient.visits.length === 0) ? (
+          <p style={{color: '#999', fontStyle:'italic'}}>No previous visits recorded.</p>
         ) : (
           <ul className="visit-list">
-            {patient.visits.map((v) => (
-              <li key={v.visit_id} className="visit-item">
-                <span className="visit-date">{v.date}</span>
-                <span className="visit-note">
-                  {v.doctor_notes || "No notes"}
-                </span>
-                <span className="visit-charge">RM {v.total_charge}</span>
-              </li>
+            {patient.visits.map(v => (
+              <VisitItem 
+                key={v.visit_id} 
+                visit={v} 
+                patientId={patient.id} 
+                onUpdate={fetchPatient} // Refresh parent data after edit
+              />
             ))}
           </ul>
         )}
@@ -1098,7 +1092,7 @@ const Section = ({ title, children }) => (
       style={{
         borderBottom: "1px solid #eee",
         paddingBottom: "5px",
-        color: "#007bff",
+        color: "#004cd8",
         marginBottom: "10px",
       }}
     >
@@ -1124,9 +1118,14 @@ const Row = ({ label, value }) => (
 );
 
 function CreateVisitForm({ patientId, onSuccess }) {
+  const now = new Date();
+  const currentHours = String(now.getHours()).padStart(2, '0');
+  const currentMinutes = String(now.getMinutes()).padStart(2, '0');
+  const currentTime = `${currentHours}:${currentMinutes}`;
+
   const [formData, setFormData] = useState({
     date: new Date().toISOString().split("T")[0],
-    time: "09:00",
+    time: currentTime,
     weight: "",
     doctor_notes: "",
     total_charge: "",
@@ -1280,6 +1279,160 @@ function ConfirmButton({ onConfirm, title = "Confirm Action", message = "Are you
         </div>
       )}
     </>
+  );
+}
+
+function calculateAge(dobString) {
+  if (!dobString) return "";
+  
+  const dob = new Date(dobString);
+  const today = new Date();
+  
+  let years = today.getFullYear() - dob.getFullYear();
+  let months = today.getMonth() - dob.getMonth();
+
+  // If the current month is before the birth month, subtract a year
+  // and add 12 months to the difference
+  if (months < 0 || (months === 0 && today.getDate() < dob.getDate())) {
+    years--;
+    months += 12;
+  }
+  
+  // Adjust if we are in the same month but the day hasn't passed yet
+  if (today.getDate() < dob.getDate()) {
+    months--;
+  }
+
+  return `${years}Y ${months}M`;
+}
+
+function VisitItem({ visit, patientId, onUpdate }) {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editData, setEditData] = useState(visit);
+
+  // Reset form data if the prop changes
+  useEffect(() => {
+    setEditData(visit);
+  }, [visit]);
+
+  const handleSave = async () => {
+    try {
+      const payload = {
+        date: editData.date,
+        // Fix Time: Ensure it has seconds (HH:MM -> HH:MM:SS)
+        time: editData.time.length === 5 ? editData.time + ":00" : editData.time,
+        // Fix Numbers: Default to 0 if empty/invalid so we don't send null
+        weight: parseFloat(editData.weight) || 0,
+        total_charge: parseFloat(editData.total_charge) || 0,
+        doctor_notes: editData.doctor_notes || ""
+      };
+
+      console.log("Sending Payload:", payload); // Debugging line
+
+      await axios.put(`${API_URL}/visits/${visit.visit_id}`, payload);
+      alert("Visit updated successfully!");
+      setIsEditing(false);
+      onUpdate(); // Tell parent to refresh the list
+    } catch (err) {
+      console.error(err);
+      alert(`Failed to update: ${err.response?.data?.detail || err.message}`);
+    }
+  };
+
+  return (
+    <li className="visit-item-container">
+      {/* HEADER: Always visible, clickable to toggle expand */}
+      <div 
+        className="visit-header-row" 
+        onClick={() => !isEditing && setIsExpanded(!isExpanded)}
+        style={{ cursor: isEditing ? 'default' : 'pointer' }}
+      >
+        <span className="visit-date">{visit.date}</span>
+        {/* Show truncated note if collapsed */}
+        <span className="visit-preview">
+            {isExpanded ? "" : (visit.doctor_notes ? visit.doctor_notes.substring(0, 60) + "..." : "No notes")}
+        </span>
+        <span className="visit-charge">RM {visit.total_charge}</span>
+        <span style={{fontSize: '0.8rem', color: '#999'}}>
+            {isExpanded ? "▼" : "▶"}
+        </span>
+      </div>
+
+      {/* BODY: Visible only when expanded */}
+      {isExpanded && (
+        <div className="visit-details-body">
+          {!isEditing ? (
+            /* --- READ ONLY VIEW --- */
+            <>
+              <div className="detail-row">
+                <strong>Time:</strong> {visit.time.slice(0, 5)} | <strong>Weight:</strong> {visit.weight} kg
+              </div>
+              <div className="detail-row" style={{marginTop: '10px'}}>
+                <strong>Doctor's Notes:</strong>
+                <p style={{whiteSpace: 'pre-wrap', marginTop: '5px', color: '#333'}}>
+                    {visit.doctor_notes || "No notes recorded."}
+                </p>
+              </div>
+              <div style={{marginTop: '15px', textAlign: 'right'}}>
+                <button className="btn-secondary" onClick={() => setIsEditing(true)}>
+                    Edit Record
+                </button>
+              </div>
+            </>
+          ) : (
+            /* --- EDIT MODE --- */
+            <div className="visit-edit-form">
+               <div className="form-grid">
+                  <div>
+                    <label>Date</label>
+                    <input type="date" value={editData.date} onChange={e => setEditData({...editData, date: e.target.value})} />
+                  </div>
+                  <div>
+                    <label>Time</label>
+                    <input type="time" value={editData.time} onChange={e => setEditData({...editData, time: e.target.value})} />
+                  </div>
+               </div>
+               <div className="form-grid" style={{marginTop: '10px'}}>
+                  <div>
+                    <label>Weight (kg)</label>
+                    <input type="number" step="0.1" value={editData.weight} onChange={e => setEditData({...editData, weight: e.target.value})} />
+                  </div>
+                  <div>
+                    <label>Charge (RM)</label>
+                    <input type="number" step="0.01" value={editData.total_charge} onChange={e => setEditData({...editData, total_charge: e.target.value})} />
+                  </div>
+               </div>
+               <div style={{marginTop: '10px'}}>
+                  <label>Notes</label>
+                  <textarea 
+                    rows="4" 
+                    value={editData.doctor_notes || ''} 
+                    onChange={e => setEditData({...editData, doctor_notes: e.target.value})} 
+                  />
+               </div>
+               
+               <div className="form-actions" style={{marginTop: '15px', display: 'flex', gap: '10px', justifyContent: 'flex-end'}}>
+                 <ConfirmButton 
+                    className="btn-success" 
+                    onConfirm={handleSave}
+                    title="Save Changes?"
+                    message="Update this medical record?"
+                 >
+                    Save
+                 </ConfirmButton>
+                 <button 
+                    className="btn-secondary" 
+                    onClick={() => { setIsEditing(false); setEditData(visit); }}
+                 >
+                    Cancel
+                 </button>
+               </div>
+            </div>
+          )}
+        </div>
+      )}
+    </li>
   );
 }
 

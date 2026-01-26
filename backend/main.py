@@ -76,6 +76,27 @@ def create_visit(visit: schemas.VisitCreate, db: Session = Depends(database.get_
     db.refresh(db_visit)
     return db_visit
 
+@app.put("/api/visits/{visit_id}")
+def update_visit(visit_id: int, visit_update: schemas.VisitUpdate, db: Session = Depends(database.get_db)):
+    # 1. Find the visit in the database
+    db_visit = db.query(models.Visit).filter(models.Visit.visit_id == visit_id).first()
+    
+    # 2. If not found, throw error
+    if not db_visit:
+        raise HTTPException(status_code=404, detail="Visit not found")
+
+    # 3. Update the fields
+    db_visit.date = visit_update.date
+    db_visit.time = visit_update.time
+    db_visit.weight = visit_update.weight
+    db_visit.total_charge = visit_update.total_charge
+    db_visit.doctor_notes = visit_update.doctor_notes
+
+    db.commit()
+    db.refresh(db_visit)
+    
+    return db_visit
+
 # --- SERVE REACT FRONTEND (Production Mode) ---
 # This checks if the 'dist' folder exists (created by 'npm run build')
 

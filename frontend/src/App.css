@@ -1,8 +1,8 @@
 :root {
-  --primary-color: #007bff;
-  --primary-hover: #0056b3;
+  --primary-color: #004cd8;
+  --primary-hover: #00448d;
   --success-color: #28a745;
-  --danger-color: #dc3545;
+  --danger-color: #cf192b;
   --bg-color: #f0f2f5;
   --card-bg: #ffffff;
   --text-dark: #333333;
@@ -296,4 +296,64 @@ button {
   justify-content: center;
   gap: 15px;
   margin-top: 20px;
+}
+
+/* --- VISIT LIST ACCORDION --- */
+.visit-list {
+  list-style: none;
+  padding: 0;
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+.visit-item-container {
+  background: #fff;
+  border: 1px solid #eee;
+  border-radius: 6px;
+  margin-bottom: 10px;
+  overflow: hidden;
+  transition: all 0.2s;
+}
+
+.visit-item-container:hover {
+  border-color: #ccc;
+}
+
+/* The clickable header */
+.visit-header-row {
+  display: grid;
+  grid-template-columns: 100px 1fr 90px 20px;
+  gap: 15px;
+  padding: 12px 15px;
+  align-items: center;
+  background: #f8f9fa;
+  user-select: none;
+}
+
+.visit-preview {
+  color: #777;
+  font-size: 0.9rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* The expanded body */
+.visit-details-body {
+  padding: 20px;
+  border-top: 1px solid #eee;
+  background: white;
+  animation: slideDown 0.2s ease-out;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.visit-edit-form textarea {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
 }

@@ -10,11 +10,15 @@ class VisitBase(BaseModel):
     doctor_notes: Optional[str] = None
     total_charge: Optional[float] = None
 
+class VisitUpdate(VisitBase):
+    pass
+
 class VisitCreate(VisitBase):
     patient_id: str
 
 class Visit(VisitBase):
     visit_id: int
+    patient_id: str
     class Config:
         from_attributes = True
 
