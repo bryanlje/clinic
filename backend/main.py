@@ -147,6 +147,21 @@ def update_visit(visit_id: int, visit_update: schemas.VisitUpdate, db: Session =
     
     return db_visit
 
+@app.delete("/api/visits/{visit_id}")
+def delete_visit(visit_id: int, db: Session = Depends(database.get_db)):
+    # 1. Find the visit
+    db_visit = db.query(models.Visit).filter(models.Visit.visit_id == visit_id).first()
+    
+    # 2. Check if exists
+    if not db_visit:
+        raise HTTPException(status_code=404, detail="Visit not found")
+    
+    # 3. Delete and commit
+    db.delete(db_visit)
+    db.commit()
+    
+    return {"detail": "Visit deleted successfully"}
+
 # --- SERVE REACT FRONTEND (Production Mode) ---
 # This checks if the 'dist' folder exists (created by 'npm run build')
 

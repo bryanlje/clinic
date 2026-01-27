@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import "./App.css";
 
-const API_URL = import.meta.env.DEV ? "http://localhost:8000/api" : "/api";
+const API_URL = import.meta.env.DEV ? "http://192.168.0.221:8000/api" : "/api";
 
 function App() {
   const [view, setView] = useState("home");
@@ -749,6 +749,17 @@ function PatientDetailView({ patientId }) {
     }
   };
 
+  const handleDeletePatient = async () => {
+    try {
+      await axios.delete(`${API_URL}/patients/${id}`);
+      // Return to dashboard after successful delete
+      onBack(); 
+    } catch (err) {
+      console.error(err);
+      alert("Failed to delete patient. Ensure all related visits are handled or check connection.");
+    }
+  };
+
   // --- EDIT HANDLERS ---
   const handleEditChange = (e) => {
     setEditFormData({ ...editFormData, [e.target.name]: e.target.value });
@@ -1212,6 +1223,27 @@ function PatientDetailView({ patientId }) {
           </ul>
         )}
       </div>
+
+      <div style={{ 
+        marginTop: '30px', 
+        display: 'flex', 
+        justifyContent: 'flex-end',
+        paddingBottom: '20px' // Add some buffer for scrolling
+      }}>
+        <ConfirmButton
+          className="btn-danger" 
+          style={{ 
+            border: 'none',
+            padding: '12px 24px',
+            fontSize: '0.8rem'
+          }}
+          onConfirm={handleDeletePatient}
+          title={`Delete ${patient.name} (${patient.id})?`}
+          message="Are you sure you want to delete this ENTIRE patient file? All personal details and visit history will be permanently lost."
+        >
+          Delete Patient File
+        </ConfirmButton>
+      </div>
     </div>
   );
 }
@@ -1471,6 +1503,17 @@ function VisitItem({ visit, patientId, onUpdate }) {
     }
   };
 
+  const handleDelete = async () => {
+    try {
+      await axios.delete(`${API_URL}/visits/${visit.visit_id}`);
+      // No alert needed if the list refreshes immediately, but you can add one
+      onUpdate(); 
+    } catch (err) {
+      console.error(err);
+      alert("Failed to delete visit.");
+    }
+  };
+
   return (
     <li className="visit-item-container">
       {/* HEADER: Always visible, clickable to toggle expand */}
@@ -1505,7 +1548,17 @@ function VisitItem({ visit, patientId, onUpdate }) {
                     {visit.doctor_notes || "No notes recorded."}
                 </p>
               </div>
-              <div style={{marginTop: '15px', textAlign: 'right'}}>
+              <div style={{marginTop: '15px', display: 'flex', justifyContent: 'flex-end', gap: '10px'}}>
+                <ConfirmButton
+                  className="btn-danger"
+                  style={{ border: 'none' }}
+                  onConfirm={handleDelete}
+                  title="Delete Record?"
+                  message="Are you sure you want to delete this visit? This cannot be undone."
+                >
+                  Delete Record
+                </ConfirmButton>
+
                 <button className="btn-secondary" onClick={() => setIsEditing(true)}>
                     Edit Record
                 </button>

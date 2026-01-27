@@ -121,6 +121,8 @@ button {
 
 .btn-success { background: var(--success-color); color: white; }
 
+.btn-danger { background: var(--danger-color); color: white;}
+
 .fab {
   position: fixed;
   bottom: 30px;
@@ -277,7 +279,7 @@ button {
 
 .modal-box {
   background: white;
-  padding: 25px;
+  padding: 40px;
   border-radius: 8px;
   box-shadow: 0 4px 15px rgba(0,0,0,0.2);
   min-width: 300px;
@@ -302,7 +304,7 @@ button {
 .visit-list {
   list-style: none;
   padding: 0;
-  max-height: 500px;
+  max-height: none;
   overflow-y: auto;
 }
 
