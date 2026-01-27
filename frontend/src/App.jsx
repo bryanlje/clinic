@@ -48,73 +48,204 @@ function App() {
 // --- SUB-COMPONENTS ---
 
 function Dashboard({ onNavigateCreate, onSelectPatient }) {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [results, setResults] = useState([]);
+  // --- STATE ---
+  const [isAdvanced, setIsAdvanced] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [results, setResults] = useState([]);
+  const [hasSearched, setHasSearched] = useState(false);
 
-  // Auto-search logic can be added here, but manual is fine for now
-  const handleSearch = async (e) => {
-    e.preventDefault(); // Prevent form submit refresh
-    if (!searchTerm) return;
+  // Basic Search State
+  const [basicQuery, setBasicQuery] = useState("");
 
+  // Advanced Search State
+  const [advParams, setAdvParams] = useState({
+    name: "",
+    patient_id: "",
+    address: "",
+    visit_start: "",
+    visit_end: "",
+    dob_start: "",
+    dob_end: "",
+  });
+
+  // --- HANDLERS ---
+  
+  const handleBasicSearch = async (e) => {
+    e.preventDefault();
+    if (!basicQuery.trim()) return;
+    executeSearch({ query: basicQuery });
+  };
+
+  const handleAdvancedSearch = async (e) => {
+    e.preventDefault();
+    // Filter out empty fields so we don't send "" to backend
+    const activeParams = {};
+    Object.keys(advParams).forEach(key => {
+      if (advParams[key]) activeParams[key] = advParams[key];
+    });
+    executeSearch(activeParams);
+  };
+
+  const executeSearch = async (paramsObj) => {
     setLoading(true);
+    setHasSearched(true);
     try {
-      const res = await axios.get(
-        `${API_URL}/patients/search/?name=${searchTerm}`,
-      );
+      const queryParams = new URLSearchParams(paramsObj);
+      const res = await axios.get(`${API_URL}/patients/search/?${queryParams.toString()}`);
       setResults(res.data);
     } catch (err) {
-      alert("Error searching patients");
+      console.error(err);
+      alert("Search failed");
     } finally {
       setLoading(false);
     }
   };
 
+  const clearAll = () => {
+    setBasicQuery("");
+    setAdvParams({
+      name: "", patient_id: "", address: "",
+      visit_start: "", visit_end: "",
+      dob_start: "", dob_end: ""
+    });
+    setResults([]);
+    setHasSearched(false);
+  };
+
+  // --- RENDER ---
   return (
     <div>
       <div className="card">
-        <h2>Find Patient</h2>
-        <form onSubmit={handleSearch} className="input-group">
-          <input
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Enter patient name or ID..."
-            autoFocus
-          />
-          <button type="submit" className="btn-primary" disabled={loading}>
-            {loading ? "Searching..." : "Search"}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
+          <h2>Find Patient</h2>
+          <button 
+            className="btn-secondary"
+            style={{ padding: "10px 30px" }}
+            onClick={() => {
+                setIsAdvanced(!isAdvanced);
+                setResults([]); // Optional: clear results on toggle
+                setHasSearched(false);
+            }}
+          >
+            {isAdvanced ? "Switch to Basic Search" : "Switch to Advanced Search"}
           </button>
-        </form>
-      </div>
+        </div>
 
-      <div className="card">
-        <h3>Results</h3>
-        {results.length === 0 ? (
-          <p style={{ color: "#888", fontStyle: "italic" }}>
-            No patients found or no search performed.
-          </p>
-        ) : (
-          <ul className="list">
-            {results.map((p) => (
-              <li key={p.id} className="list-item">
-                <div>
-                  <div style={{ fontWeight: "bold", fontSize: "1.1rem" }}>
-                    {p.name}
+        {/* === BASIC SEARCH MODE === */}
+        {!isAdvanced && (
+          <form onSubmit={handleBasicSearch} className="input-group">
+            <input
+              value={basicQuery}
+              onChange={(e) => setBasicQuery(e.target.value)}
+              placeholder="Enter Name or ID..."
+              autoFocus
+            />
+            <button type="submit" className="btn-primary" disabled={loading}>
+              Search
+            </button>
+          </form>
+        )}
+
+        {/* === ADVANCED SEARCH MODE === */}
+        {isAdvanced && (
+          <form onSubmit={handleAdvancedSearch} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+            
+            {/* Row 1: Identity */}
+            <div className="input-row">
+              <div style={{ flex: 2 }}>
+                <label className="label-small">Name</label>
+                <input 
+                  value={advParams.name}
+                  onChange={e => setAdvParams({...advParams, name: e.target.value})}
+                  placeholder="Contains..."
+                />
+              </div>
+              <div style={{ flex: 1 }}>
+                <label className="label-small">Patient ID</label>
+                <input 
+                  value={advParams.patient_id}
+                  onChange={e => setAdvParams({...advParams, patient_id: e.target.value})}
+                  placeholder="Contains..."
+                />
+              </div>
+            </div>
+
+            {/* Row 2: Address */}
+            <div>
+              <label className="label-small">Address</label>
+              <input 
+                  value={advParams.address}
+                  onChange={e => setAdvParams({...advParams, address: e.target.value})}
+                  placeholder="Contains..."
+              />
+            </div>
+
+            {/* Row 3: Dates (Grid) */}
+            <div className="input-row">
+              {/* DOB Section */}
+              <div style={{ flex: 1, border: '1px solid #eee', padding: '10px', borderRadius: '8px' }}>
+                <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>Date of Birth</div>
+                <div className="input-row">
+                  <div style={{ flex: 1 }}>
+                    <label className="label-small">From</label>
+                    <input type="date" value={advParams.dob_start} onChange={e => setAdvParams({...advParams, dob_start: e.target.value})} />
                   </div>
-                  <div style={{ fontSize: "0.9rem", color: "#666" }}>
-                    ID: {p.id} | DOB: {p.date_of_birth}
+                  <div style={{ flex: 1 }}>
+                    <label className="label-small">To</label>
+                    <input type="date" value={advParams.dob_end} onChange={e => setAdvParams({...advParams, dob_end: e.target.value})} />
                   </div>
                 </div>
-                <button
-                  className="btn-secondary"
-                  onClick={() => onSelectPatient(p)}
-                >
-                  Open File
-                </button>
-              </li>
-            ))}
-          </ul>
+              </div>
+
+              {/* Visit Section */}
+              <div style={{ flex: 1, border: '1px solid #eee', padding: '10px', borderRadius: '8px' }}>
+                <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>Visit Date</div>
+                <div className="input-row">
+                  <div style={{ flex: 1 }}>
+                    <label className="label-small">From</label>
+                    <input type="date" value={advParams.visit_start} onChange={e => setAdvParams({...advParams, visit_start: e.target.value})} />
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <label className="label-small">To</label>
+                    <input type="date" value={advParams.visit_end} onChange={e => setAdvParams({...advParams, visit_end: e.target.value})} />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <button type="submit" className="btn-primary" style={{ flex: 3 }} disabled={loading}>
+                {loading ? "Searching..." : "Apply Filters"}
+              </button>
+              <button type="button" className="btn-secondary" style={{ flex: 1 }} onClick={clearAll}>
+                Clear
+              </button>
+            </div>
+          </form>
         )}
+      </div>
+
+      {/* === RESULTS LIST === */}
+      <div className="card">
+        <h3>Results {hasSearched && `(${results.length})`}</h3>
+        {/* ... (Existing Results Logic) ... */}
+        {!loading && results.length === 0 && hasSearched && (
+            <p style={{ color: "#888", fontStyle: "italic" }}>No patients found.</p>
+        )}
+        
+        <ul className="list">
+            {results.map(p => (
+                <li key={p.id} className="list-item">
+                    <div>
+                        <div style={{fontWeight:'bold', paddingBottom: '5px'}}>{p.name}</div>
+                        <div style={{fontSize:'0.9rem', color:'#666'}}>
+                             ID: {p.id} | DOB: {p.date_of_birth}
+                        </div>
+                    </div>
+                    <button className="btn-secondary" onClick={() => onSelectPatient(p)}>Open</button>
+                </li>
+            ))}
+        </ul>
       </div>
 
       <button onClick={onNavigateCreate} className="fab">

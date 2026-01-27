@@ -1,9 +1,11 @@
 import os
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends, HTTPException, Query
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
+from sqlalchemy import or_
 from sqlalchemy.orm import Session
-from typing import List
+from typing import List, Optional
+from datetime import date
 from fastapi.middleware.cors import CORSMiddleware
 
 import models, schemas, database
@@ -39,14 +41,62 @@ def create_patient(patient: schemas.PatientCreate, db: Session = Depends(databas
     return db_patient
 
 @app.get("/api/patients/search/", response_model=List[schemas.Patient])
-def search_patients(name: str, db: Session = Depends(database.get_db)):
-    name_results = db.query(models.Patient).filter(
-        models.Patient.name.ilike(f"%{name}%")
-    ).all()
-    id_results = db.query(models.Patient).filter(
-        models.Patient.id.ilike(f"%{name}%")
-    ).all()
-    return set(name_results + id_results)
+def search_patients(
+    # Basic seach param
+    query: Optional[str] = None,
+
+    # Advanced specific params
+    name: Optional[str] = None,
+    patient_id: Optional[str] = None,
+    address: Optional[str] = None,
+    visit_start: Optional[date] = None,
+    visit_end: Optional[date] = None,
+    dob_start: Optional[date] = None,
+    dob_end: Optional[date] = None,
+
+    db: Session = Depends(database.get_db)
+):
+    sql_query = db.query(models.Patient)
+
+    # 1. Join Visits only if filtering by visit dates
+    if visit_start or visit_end:
+        sql_query = sql_query.join(models.Visit)
+
+    # 2. BASIC SEARCH (Name OR ID)
+    if query and not name:
+        sql_query = sql_query.filter(
+            or_(
+                models.Patient.name.ilike(f"%{query}%"),
+                models.Patient.id.ilike(f"%{query}%")
+            )
+        )
+
+    # 3. ADVANCED SEARCH (Specific fields)
+    if not query and not (name or patient_id or address or visit_start or visit_end or dob_start or dob_end):
+        return List()
+
+    if name:
+        sql_query = sql_query.filter(models.Patient.name.ilike(f"%{name}%"))
+
+    if patient_id:
+        sql_query = sql_query.filter(models.Patient.id.ilike(f"%{patient_id}%"))
+
+    if address:
+        sql_query = sql_query.filter(models.Patient.address.ilike(f"%{address}%"))
+
+    if visit_start:
+        sql_query = sql_query.filter(models.Visit.date >= visit_start)
+
+    if visit_end:
+        sql_query = sql_query.filter(models.Visit.date <= visit_end)
+
+    if dob_start:
+        sql_query = sql_query.filter(models.Patient.date_of_birth >= dob_start)
+
+    if dob_end:
+        sql_query = sql_query.filter(models.Patient.date_of_birth <= dob_end)
+
+    return sql_query.distinct().all()
 
 @app.get("/api/patients/{patient_id}", response_model=schemas.Patient)
 def get_patient(patient_id: str, db: Session = Depends(database.get_db)):
