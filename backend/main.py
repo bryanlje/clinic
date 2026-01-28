@@ -1,5 +1,5 @@
 import os
-from fastapi import FastAPI, Depends, HTTPException, Query
+from fastapi import FastAPI, Depends, HTTPException, Query, File, UploadFile
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from sqlalchemy import or_
@@ -8,7 +8,7 @@ from typing import List, Optional
 from datetime import date
 from fastapi.middleware.cors import CORSMiddleware
 
-import models, schemas, database
+import models, schemas, database, storage
 
 # Create tables
 models.Base.metadata.create_all(bind=database.engine)
@@ -161,6 +161,51 @@ def delete_visit(visit_id: int, db: Session = Depends(database.get_db)):
     db.commit()
     
     return {"detail": "Visit deleted successfully"}
+
+# Mount uploads folder for local dev
+os.makedirs("uploads", exist_ok=True)
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
+
+@app.post("/api/visits/{visit_id}/upload")
+async def upload_attachment(
+    visit_id: int, 
+    file: UploadFile = File(...), 
+    db: Session = Depends(database.get_db)
+):
+    # 1. Save file physically (Local or Cloud)
+    stored_path = await storage.save_file(file, visit_id)
+
+    # 2. Save metadata to DB
+    attachment = models.VisitAttachment(
+        visit_id=visit_id,
+        file_path=stored_path,
+        file_type=file.content_type,
+        original_filename=file.filename
+    )
+    db.add(attachment)
+    db.commit()
+
+    return {"status": "success", "path": stored_path}
+
+@app.delete("/api/attachments/{attachment_id}")
+async def delete_visit_attachment(
+    attachment_id: int, 
+    db: Session = Depends(database.get_db)
+):
+    # 1. Find the attachment record
+    attachment = db.query(models.VisitAttachment).filter(models.VisitAttachment.id == attachment_id).first()
+    
+    if not attachment:
+        raise HTTPException(status_code=404, detail="Attachment not found")
+
+    # 2. Delete the physical file (using our storage helper)
+    await storage.delete_file(attachment.file_path)
+
+    # 3. Delete the DB record
+    db.delete(attachment)
+    db.commit()
+    
+    return {"status": "deleted"}
 
 # --- SERVE REACT FRONTEND (Production Mode) ---
 # This checks if the 'dist' folder exists (created by 'npm run build')

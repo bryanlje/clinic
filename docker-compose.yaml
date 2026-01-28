@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  backend:
+    build: ./backend      # <--- Looks inside the backend folder for a Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+      - ./uploads:/app/uploads # <--- Maps root uploads folder to container
+    environment:
+      - DATABASE_URL=postgresql://postgres:leongclinic@localhost:5432/postgres
+      - ENVIRONMENT=local
+
+  frontend:
+    build: ./frontend     # <--- Looks inside the frontend folder for a Dockerfile
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    stdin_open: true      # Fixes potential React exit bugs
+
+  db:
+    image: postgres:18
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:

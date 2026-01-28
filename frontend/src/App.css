@@ -1,5 +1,5 @@
 :root {
-  --primary-color: #004cd8;
+  --primary-color: #0948bd;
   --primary-hover: #00448d;
   --success-color: #28a745;
   --danger-color: #cf192b;
@@ -29,17 +29,19 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-bottom: 30px;
-  background: var(--card-bg);
-  padding: 15px 20px;
+  margin-bottom: 25px;
+  background: var(--primary-color);
+  color: white;
+  padding: 20px 20px;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  font-family: Georgia, 'Times New Roman', Times, serif;
 }
 
 .header h1 {
   margin: 0;
   font-size: 1.5rem;
-  color: var(--primary-color);
+  color: var(--bg-color);
 }
 
 .nav-btn {
@@ -106,7 +108,7 @@ input:focus, textarea:focus {
 /* --- BUTTONS --- */
 button {
   cursor: pointer;
-  padding: 10px 18px;
+  padding: 10px 25px;
   border-radius: 6px;
   border: none;
   font-weight: 600;
@@ -128,7 +130,7 @@ button {
   bottom: 30px;
   right: 30px;
   padding: 20px 30px;
-  border-radius: 50px;
+  border-radius: 40px;
   font-size: 1rem;
   box-shadow: 0 4px 15px rgba(40, 167, 69, 0.4);
   background: var(--success-color);
@@ -357,5 +359,39 @@ button {
   width: 100%;
   padding: 8px;
   border: 1px solid #ccc;
-  border-radius: 4px;
+  border-radius: 6px;
+}
+
+.breadcrumb-bar {
+  /* padding: 10px 0; */
+  margin-bottom: 10px;
+  border-bottom: 1px solid #eee; /* Subtle separator */
+}
+
+.btn-link {
+  background: none;
+  border: none;
+  color: #666;
+  font-size: 0.95rem;
+  cursor: pointer;
+  padding: 5px 0;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: color 0.2s;
+}
+
+.btn-link:hover {
+  color: var(--primary-color);
+  text-decoration: underline;
+}
+
+/* Optional: Add some spacing to the main content wrapper if needed */
+.main-content {
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
 }

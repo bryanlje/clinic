@@ -8,6 +8,8 @@ export default function CreateVisitForm({ patientId, onSuccess }) {
   const currentMinutes = String(now.getMinutes()).padStart(2, '0');
   const currentTime = `${currentHours}:${currentMinutes}`;
 
+  const [selectedFile, setSelectedFile] = useState(null);
+
   const [formData, setFormData] = useState({
     date: new Date().toISOString().split("T")[0],
     time: currentTime,
@@ -28,11 +30,26 @@ export default function CreateVisitForm({ patientId, onSuccess }) {
         doctor_notes: formData.doctor_notes,
       };
 
-      await axios.post(`${API_URL}/visits/`, payload);
+      // 2. Step 1: Create the Visit Record
+      const response = await axios.post(`${API_URL}/visits/`, payload);
+      
+      // CRITICAL: Ensure your Backend POST returns the new ID (e.g. { visit_id: 123, ... })
+      const newVisitId = response.data.visit_id; 
+
+      // 3. Step 2: Upload File (if selected)
+      if (selectedFile && newVisitId) {
+        const fileData = new FormData();
+        fileData.append("file", selectedFile);
+
+        await axios.post(`${API_URL}/visits/${newVisitId}/upload`, fileData, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
+      }
+
       onSuccess();
     } catch (err) {
       console.error(err);
-      alert("Error saving visit");
+      alert("Error saving visit or uploading file");
     }
   };
 
@@ -84,6 +101,18 @@ export default function CreateVisitForm({ patientId, onSuccess }) {
           />
         </div>
       </div>
+
+      <div style={{ marginTop: "10px" }}>
+        <label>Attachment (Optional)</label>
+        <input 
+            type="file" 
+            accept="image/*,.pdf"
+            onChange={(e) => setSelectedFile(e.target.files[0])}
+            style={{ display: 'block', marginTop: '5px' }}
+        />
+        <small style={{color: '#666'}}>Max 1 file (JPG/PNG/PDF)</small>
+      </div>
+      
       <div style={{ marginTop: "10px" }}>
         <label>Doctor's Notes</label>
         <textarea

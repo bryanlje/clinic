@@ -7,10 +7,20 @@ export default function VisitItem({ visit, patientId, onUpdate }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState(visit);
+  const [newFile, setNewFile] = useState(null);
 
   useEffect(() => {
     setEditData(visit);
+    setNewFile(null);
   }, [visit]);
+
+  const getFileUrl = (path) => {
+    if (!path) return "";
+    if (path.startsWith("http")) return path; // GCP/Cloud URL
+    // Local URL: Remove '/api' from base URL if path is relative
+    const baseUrl = API_URL.replace("/api", ""); 
+    return `${baseUrl}${path}`;
+  };
 
   const handleSave = async () => {
     try {
@@ -23,6 +33,15 @@ export default function VisitItem({ visit, patientId, onUpdate }) {
       };
 
       await axios.put(`${API_URL}/visits/${visit.visit_id}`, payload);
+
+      if (newFile) {
+        const formData = new FormData();
+        formData.append("file", newFile);
+        await axios.post(`${API_URL}/visits/${visit.visit_id}/upload`, formData, {
+            headers: { "Content-Type": "multipart/form-data" },
+        });
+      }
+
       alert("Visit updated successfully!");
       setIsEditing(false);
       onUpdate(); 
@@ -39,6 +58,24 @@ export default function VisitItem({ visit, patientId, onUpdate }) {
     } catch (err) {
       console.error(err);
       alert("Failed to delete visit.");
+    }
+  };
+
+  const handleDeleteAttachment = async (attachmentId) => {
+    if (!window.confirm("Remove this attachment? This cannot be undone.")) return;
+
+    try {
+      await axios.delete(`${API_URL}/attachments/${attachmentId}`);
+      
+      // Update local state immediately to remove it from UI
+      const updatedAttachments = editData.attachments.filter(a => a.id !== attachmentId);
+      setEditData({ ...editData, attachments: updatedAttachments });
+      
+      // Trigger parent update (optional, but good for consistency)
+      onUpdate(); 
+    } catch (err) {
+      console.error(err);
+      alert("Failed to delete attachment");
     }
   };
 
@@ -66,12 +103,34 @@ export default function VisitItem({ visit, patientId, onUpdate }) {
               <div className="detail-row">
                 <strong>Time:</strong> {visit.time.slice(0, 5)} | <strong>Weight:</strong> {visit.weight} kg
               </div>
-              <div className="detail-row" style={{marginTop: '10px'}}>
+
+              {visit.attachments && visit.attachments.length > 0 && (
+                <div style={{marginTop: '15px'}}>
+                    <strong>Attachments:</strong>
+                    <div style={{display: 'flex', gap: '10px', marginTop: '5px', flexWrap: 'wrap'}}>
+                        {visit.attachments.map(att => (
+                            <a 
+                                key={att.id} 
+                                href={getFileUrl(att.file_path)} 
+                                target="_blank" 
+                                rel="noreferrer"
+                                className="btn-secondary"
+                                style={{textDecoration: 'none', fontSize: '0.85rem', display: 'flex', alignItems: 'center'}}
+                            >
+                                📄 {att.original_filename}
+                            </a>
+                        ))}
+                    </div>
+                </div>
+              )}
+
+              <div className="detail-row" style={{marginTop: '15px'}}>
                 <strong>Doctor's Notes:</strong>
                 <p style={{whiteSpace: 'pre-wrap', marginTop: '5px', color: '#333'}}>
                     {visit.doctor_notes || "No notes recorded."}
                 </p>
               </div>
+
               <div style={{marginTop: '15px', display: 'flex', justifyContent: 'flex-end', gap: '10px'}}>
                 <ConfirmButton
                   className="btn-danger"
@@ -109,6 +168,35 @@ export default function VisitItem({ visit, patientId, onUpdate }) {
                     <label>Charge (RM)</label>
                     <input type="number" step="0.01" value={editData.total_charge} onChange={e => setEditData({...editData, total_charge: e.target.value})} />
                   </div>
+               </div>
+               <div style={{marginTop: '15px'}}>
+                  <label>Attachments</label>
+                  
+                  {editData.attachments && editData.attachments.length > 0 && (
+                    <ul style={{listStyle: 'none', padding: 0, marginTop: '5px'}}>
+                        {editData.attachments.map(att => (
+                            <li key={att.id} style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#f1f1f1', padding: '0px 10px', marginBottom: '5px', borderRadius: '6px'}}>
+                                <span style={{fontSize: '0.9rem'}}>📄 {att.original_filename}</span>
+                                <button 
+                                    type="button" 
+                                    onClick={() => handleDeleteAttachment(att.id)}
+                                    style={{background: 'none', border: 'none', color: '#d9534f', cursor: 'pointer', fontWeight: 'bold'}}
+                                    title="Remove attachment"
+                                >
+                                    ✕
+                                </button>
+                            </li>
+                        ))}
+                    </ul>
+                  )}
+
+                  {/* 2. Add New Attachment */}
+                  <label style={{fontSize: '0.85rem', color: '#666', marginTop: '15px'}}>Add New:</label>
+                  <input 
+                    type="file" 
+                    onChange={e => setNewFile(e.target.files[0])}
+                    style={{display: 'block', marginTop: '2px'}}
+                  />
                </div>
                <div style={{marginTop: '10px'}}>
                   <label>Notes</label>

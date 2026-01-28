@@ -16,9 +16,19 @@ class VisitUpdate(VisitBase):
 class VisitCreate(VisitBase):
     patient_id: str
 
+class VisitAttachmentBase(BaseModel):
+    id: int
+    file_path: str
+    original_filename: str
+    file_type: str
+
+    class Config:
+        from_attributes = True
+
 class Visit(VisitBase):
     visit_id: int
     patient_id: str
+    attachments: List[VisitAttachmentBase] = []
     class Config:
         from_attributes = True
 

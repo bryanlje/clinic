@@ -17,35 +17,44 @@ function App() {
 
   return (
     <div className="container">
+      {/* --- 1. GLOBAL HEADER (Branding only) --- */}
       <header className="header">
-        <h1 style={{ marginRight: "25px" }}>🏥 Leong Baby & Child Clinic</h1>
-        {view !== "home" && (
-          <button onClick={goHome} className="nav-btn">
-            ← Back to Dashboard
-          </button>
-        )}
+        <h1>Leong Baby & Child Clinic</h1>
       </header>
 
-      {view === "home" && (
-        <Dashboard
-          onNavigateCreate={() => setView("createPatient")}
-          onSelectPatient={(patient) => {
-            setSelectedPatient(patient);
-            setView("patientDetails");
-          }}
-        />
+      {/* --- 2. CONTEXT NAVIGATION (Breadcrumbs/Back) --- */}
+      {view !== "home" && (
+        <nav className="breadcrumb-bar">
+          <button onClick={goHome} className="btn-link">
+            &larr; Back to Dashboard
+          </button>
+          {/* You could add more breadcrumbs here later, e.g. " > Patient Details" */}
+        </nav>
       )}
 
-      {view === "createPatient" && (
-        <CreatePatientForm onSuccess={goHome} onCancel={goHome} />
-      )}
+      {/* --- 3. MAIN CONTENT --- */}
+      <main className="main-content">
+        {view === "home" && (
+          <Dashboard
+            onNavigateCreate={() => setView("createPatient")}
+            onSelectPatient={(patient) => {
+              setSelectedPatient(patient);
+              setView("patientDetails");
+            }}
+          />
+        )}
 
-      {view === "patientDetails" && selectedPatient && (
-        <PatientDetailView 
-          patientId={selectedPatient.id} 
-          onBack={goHome} 
-        />
-      )}
+        {view === "createPatient" && (
+          <CreatePatientForm onSuccess={goHome} onCancel={goHome} />
+        )}
+
+        {view === "patientDetails" && selectedPatient && (
+          <PatientDetailView 
+            patientId={selectedPatient.id} 
+            onBack={goHome} 
+          />
+        )}
+      </main>
     </div>
   );
 }

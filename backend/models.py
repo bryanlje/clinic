@@ -44,3 +44,13 @@ class Visit(Base):
     total_charge = Column(Float, nullable=True)
     
     patient = relationship("Patient", back_populates="visits")
+    attachments = relationship("VisitAttachment", back_populates="visit", cascade="all, delete-orphan")
+
+class VisitAttachment(Base):
+    __tablename__ = "visit_attachments"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    visit_id = Column(Integer, ForeignKey("visits.visit_id"), nullable=False)
+    file_path = Column(String, nullable=False)       
+    file_type = Column(String, nullable=False)       
+    original_filename = Column(String, nullable=False) 
+    visit = relationship("Visit", back_populates="attachments")
