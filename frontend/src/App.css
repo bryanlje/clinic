@@ -235,7 +235,12 @@ button {
 .input-row {
   display: flex;
   gap: 10px;
-  margin-bottom: 10px;
+  margin-bottom: 5px;
+}
+
+.label-small {
+  color: var(--text-dark);
+  font-size: 0.9rem;
 }
 
 /* --- PATIENT DETAIL HEADER --- */

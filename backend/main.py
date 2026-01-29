@@ -2,7 +2,7 @@ import os
 from fastapi import FastAPI, Depends, HTTPException, Query, File, UploadFile
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
-from sqlalchemy import or_
+from sqlalchemy import or_, func, cast, Integer
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from datetime import date
@@ -49,6 +49,8 @@ def search_patients(
     name: Optional[str] = None,
     patient_id: Optional[str] = None,
     address: Optional[str] = None,
+    date_registered_start: Optional[date] = None,
+    date_registered_end: Optional[date] = None,
     visit_start: Optional[date] = None,
     visit_end: Optional[date] = None,
     dob_start: Optional[date] = None,
@@ -74,8 +76,8 @@ def search_patients(
         )
 
     # 3. ADVANCED SEARCH (Specific fields)
-    if not query and not (name or patient_id or address or visit_start or visit_end or dob_start or dob_end):
-        return List()
+    if not query and not (name or patient_id or address or date_registered_start or date_registered_end or visit_start or visit_end or dob_start or dob_end):
+        return []
 
     if name:
         sql_query = sql_query.filter(models.Patient.name.ilike(f"%{name}%"))
@@ -85,6 +87,12 @@ def search_patients(
 
     if address:
         sql_query = sql_query.filter(models.Patient.address.ilike(f"%{address}%"))
+
+    if date_registered_start:
+        sql_query = sql_query.filter(models.Patient.date_registered >= date_registered_start)
+
+    if date_registered_end:
+        sql_query = sql_query.filter(models.Patient.date_registered <= date_registered_end)
 
     if visit_start:
         sql_query = sql_query.filter(models.Visit.date >= visit_start)
@@ -146,37 +154,27 @@ async def delete_patient(patient_id: str, db: Session = Depends(database.get_db)
 
 @app.get("/api/patients/next-id/{prefix}")
 def get_next_id(prefix: str, db: Session = Depends(database.get_db)):
-    # 1. Get all IDs starting with this prefix (case insensitive)
-    # Fetch only the ID column to be fast
-    results = db.query(models.Patient.id)\
-                .filter(models.Patient.id.ilike(f"{prefix}%"))\
-                .all()
+    # Calculate length to strip the prefix (e.g., "P" is len 1, so start at index 2)
+    # Note: SQL substring is 1-indexed usually, but let's be safe with logic
+    prefix_len = len(prefix) + 1 
     
-    # 2. If no patients found with this prefix
-    if not results:
-        return {
-            "last_id": None, 
-            "next_suggestion": f"{prefix.upper()}1"
-        }
+    # SQL: SELECT MAX(CAST(SUBSTRING(id FROM x) AS INTEGER)) FROM patients WHERE id LIKE 'X%'
+    max_val = db.query(
+        func.max(
+            cast(
+                func.substring(models.Patient.id, prefix_len), 
+                Integer
+            )
+        )
+    ).filter(
+        models.Patient.id.ilike(f"{prefix}%")
+    ).scalar() # scalar() gets the single value, not a list
+
+    next_num = (max_val or 0) + 1
     
-    # 3. Find the highest number (Strip the prefix and convert the rest to an integer)
-    highest_num = 0
-    
-    for row in results:
-        pid = row[0] # row is a tuple ('B1034',)
-        
-        # Remove the prefix to find the number part
-        # Logic: Assume the prefix is whatever the user typed (e.g. 1 char 'B')
-        num_part = pid[len(prefix):] 
-        
-        if num_part.isdigit():
-            val = int(num_part)
-            if val > highest_num:
-                highest_num = val
-                
     return {
-        "last_id": f"{prefix.upper()}{highest_num}" if highest_num > 0 else None,
-        "next_suggestion": f"{prefix.upper()}{highest_num + 1}"
+        "last_id": f"{prefix.upper()}{max_val}" if max_val else None,
+        "next_suggestion": f"{prefix.upper()}{next_num}"
     }
 
 @app.post("/api/visits/", response_model=schemas.Visit)
@@ -278,7 +276,8 @@ async def delete_visit_attachment(
 # --- SERVE REACT FRONTEND (Production Mode) ---
 # This checks if the 'dist' folder exists (created by 'npm run build')
 
-frontend_dist = "../frontend/dist"
+# Default to local dev path, but allow override via ENV
+frontend_dist = os.getenv("FRONTEND_DIST_PATH", "../frontend/dist")
 
 if os.path.exists(frontend_dist):
     app.mount("/assets", StaticFiles(directory=f"{frontend_dist}/assets"), name="assets")

@@ -9,9 +9,15 @@ export default function Dashboard({ onNavigateCreate, onSelectPatient }) {
   const [hasSearched, setHasSearched] = useState(false);
   const [basicQuery, setBasicQuery] = useState("");
   const [advParams, setAdvParams] = useState({
-    name: "", patient_id: "", address: "",
-    visit_start: "", visit_end: "",
-    dob_start: "", dob_end: "",
+    name: "",
+    patient_id: "",
+    address: "",
+    date_registered_start: "",
+    date_registered_end: "",
+    visit_start: "",
+    visit_end: "",
+    dob_start: "",
+    dob_end: "",
   });
 
   const SEARCH_LIMIT = 25;
@@ -25,7 +31,7 @@ export default function Dashboard({ onNavigateCreate, onSelectPatient }) {
   const handleAdvancedSearch = async (e) => {
     e.preventDefault();
     const activeParams = {};
-    Object.keys(advParams).forEach(key => {
+    Object.keys(advParams).forEach((key) => {
       if (advParams[key]) activeParams[key] = advParams[key];
     });
     executeSearch(activeParams);
@@ -38,9 +44,11 @@ export default function Dashboard({ onNavigateCreate, onSelectPatient }) {
       const queryParams = new URLSearchParams(paramsObj);
 
       // Append the SEARCH_LIMIT param
-      queryParams.append("limit", SEARCH_LIMIT + 1)
+      queryParams.append("limit", SEARCH_LIMIT + 1);
 
-      const res = await axios.get(`${API_URL}/patients/search/?${queryParams.toString()}`);
+      const res = await axios.get(
+        `${API_URL}/patients/search/?${queryParams.toString()}`,
+      );
       setResults(res.data);
     } catch (err) {
       console.error(err);
@@ -53,9 +61,15 @@ export default function Dashboard({ onNavigateCreate, onSelectPatient }) {
   const clearAll = () => {
     setBasicQuery("");
     setAdvParams({
-      name: "", patient_id: "", address: "",
-      visit_start: "", visit_end: "",
-      dob_start: "", dob_end: ""
+      name: "",
+      patient_id: "",
+      address: "",
+      date_registered_start: "",
+      date_registered_end: "",
+      visit_start: "",
+      visit_end: "",
+      dob_start: "",
+      dob_end: "",
     });
     setResults([]);
     setHasSearched(false);
@@ -79,18 +93,27 @@ export default function Dashboard({ onNavigateCreate, onSelectPatient }) {
   return (
     <div>
       <div className="card">
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: "20px",
+          }}
+        >
           <h2>Find Patient</h2>
-          <button 
+          <button
             className="btn-secondary"
             style={{ padding: "10px 30px" }}
             onClick={() => {
-                setIsAdvanced(!isAdvanced);
-                setResults([]); 
-                setHasSearched(false);
+              setIsAdvanced(!isAdvanced);
+              setResults([]);
+              setHasSearched(false);
             }}
           >
-            {isAdvanced ? "Switch to Basic Search" : "Switch to Advanced Search"}
+            {isAdvanced
+              ? "Switch to Basic Search"
+              : "Switch to Advanced Search"}
           </button>
         </div>
 
@@ -109,105 +132,265 @@ export default function Dashboard({ onNavigateCreate, onSelectPatient }) {
         )}
 
         {isAdvanced && (
-          <form onSubmit={handleAdvancedSearch} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+          <form
+            onSubmit={handleAdvancedSearch}
+            style={{ display: "flex", flexDirection: "column", gap: "15px" }}
+          >
             <div className="input-row">
               <div style={{ flex: 2 }}>
                 <label className="label-small">Name</label>
-                <input 
+                <input
                   value={advParams.name}
-                  onChange={e => setAdvParams({...advParams, name: e.target.value})}
+                  onChange={(e) =>
+                    setAdvParams({ ...advParams, name: e.target.value })
+                  }
                   placeholder="Contains..."
                 />
               </div>
               <div style={{ flex: 1 }}>
                 <label className="label-small">Patient ID</label>
-                <input 
+                <input
                   value={advParams.patient_id}
-                  onChange={e => setAdvParams({...advParams, patient_id: e.target.value})}
+                  onChange={(e) =>
+                    setAdvParams({ ...advParams, patient_id: e.target.value })
+                  }
                   placeholder="Contains..."
                 />
               </div>
             </div>
 
-            <div>
-              <label className="label-small">Address</label>
-              <input 
+            <div className="input-row">
+              <div style={{ flex: 1 }}>
+                <label className="label-small">Address</label>
+                <input
                   value={advParams.address}
-                  onChange={e => setAdvParams({...advParams, address: e.target.value})}
+                  onChange={(e) =>
+                    setAdvParams({ ...advParams, address: e.target.value })
+                  }
                   placeholder="Contains..."
-              />
+                />
+              </div>
             </div>
 
             <div className="input-row">
-              <div style={{ flex: 1, border: '1px solid #eee', padding: '10px', borderRadius: '8px' }}>
-                <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>Date of Birth</div>
-                <div className="input-row">
+              <div
+                style={{
+                  flex: 1,
+                  border: "1px solid #eee",
+                  padding: "10px",
+                  borderRadius: "8px",
+                }}
+              >
+                <div
+                  className="label-small"
+                  style={{ fontWeight: "bold", marginBottom: "5px" }}
+                >
+                  Date of Birth
+                </div>
+                <div>
                   <div style={{ flex: 1 }}>
                     <label className="label-small">From</label>
-                    <input type="date" value={advParams.dob_start} onChange={e => setAdvParams({...advParams, dob_start: e.target.value})} />
+                    <input
+                      type="date"
+                      value={advParams.dob_start}
+                      onChange={(e) =>
+                        setAdvParams({
+                          ...advParams,
+                          dob_start: e.target.value,
+                        })
+                      }
+                    />
                   </div>
                   <div style={{ flex: 1 }}>
                     <label className="label-small">To</label>
-                    <input type="date" value={advParams.dob_end} onChange={e => setAdvParams({...advParams, dob_end: e.target.value})} />
+                    <input
+                      type="date"
+                      value={advParams.dob_end}
+                      onChange={(e) =>
+                        setAdvParams({ ...advParams, dob_end: e.target.value })
+                      }
+                    />
                   </div>
                 </div>
               </div>
 
-              <div style={{ flex: 1, border: '1px solid #eee', padding: '10px', borderRadius: '8px' }}>
-                <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>Visit Date</div>
-                <div className="input-row">
+              <div
+                style={{
+                  flex: 1,
+                  border: "1px solid #eee",
+                  padding: "10px",
+                  borderRadius: "8px",
+                }}
+              >
+                <div
+                  className="label-small"
+                  style={{ fontWeight: "bold", marginBottom: "5px" }}
+                >
+                  Visit Date
+                </div>
+                <div>
                   <div style={{ flex: 1 }}>
                     <label className="label-small">From</label>
-                    <input type="date" value={advParams.visit_start} onChange={e => setAdvParams({...advParams, visit_start: e.target.value})} />
+                    <input
+                      type="date"
+                      value={advParams.visit_start}
+                      onChange={(e) =>
+                        setAdvParams({
+                          ...advParams,
+                          visit_start: e.target.value,
+                        })
+                      }
+                    />
                   </div>
                   <div style={{ flex: 1 }}>
                     <label className="label-small">To</label>
-                    <input type="date" value={advParams.visit_end} onChange={e => setAdvParams({...advParams, visit_end: e.target.value})} />
+                    <input
+                      type="date"
+                      value={advParams.visit_end}
+                      onChange={(e) =>
+                        setAdvParams({
+                          ...advParams,
+                          visit_end: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div
+                style={{
+                  flex: 1,
+                  border: "1px solid #eee",
+                  padding: "10px",
+                  borderRadius: "8px",
+                }}
+              >
+                <div
+                  className="label-small"
+                  style={{ fontWeight: "bold", marginBottom: "5px" }}
+                >
+                  Date Registered
+                </div>
+                <div>
+                  <div style={{ flex: 1 }}>
+                    <label className="label-small">From</label>
+                    <input
+                      type="date"
+                      value={advParams.date_registered_start}
+                      onChange={(e) =>
+                        setAdvParams({
+                          ...advParams,
+                          date_registered_start: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <label className="label-small">To</label>
+                    <input
+                      type="date"
+                      value={advParams.date_registered_end}
+                      onChange={(e) =>
+                        setAdvParams({
+                          ...advParams,
+                          date_registered_end: e.target.value,
+                        })
+                      }
+                    />
                   </div>
                 </div>
               </div>
             </div>
 
-            <div style={{ display: 'flex', gap: '10px' }}>
-              <button type="submit" className="btn-primary" style={{ flex: 3 }} disabled={loading}>
-                {loading ? "Searching..." : "Apply Filters"}
-              </button>
-              <button type="button" className="btn-secondary" style={{ flex: 1 }} onClick={clearAll}>
-                Clear
-              </button>
+            <div className="input-row">
+              <div
+                style={{
+                  flex: 1,
+                  display: "flex",
+                  gap: "10px",
+                  alignItems: "flex-start",
+                }}
+              >
+                <button
+                  type="submit"
+                  className="btn-primary"
+                  style={{ flex: 3 }}
+                  disabled={loading}
+                >
+                  {loading ? "Searching..." : "Apply Filters"}
+                </button>
+                <button
+                  type="button"
+                  className="btn-secondary"
+                  style={{ flex: 1 }}
+                  onClick={clearAll}
+                >
+                  Clear
+                </button>
+              </div>
             </div>
           </form>
         )}
       </div>
 
       <div className="card">
-        <div style={{display:'flex', justifyContent:'space-between', alignItems:'center'}}>
-            <h3>Results {hasSearched && (searchLimitReached ? `(${SEARCH_LIMIT}+)` : `(${results.length})`)}</h3>
-            
-            {/* WARNING MESSAGE if limit is hit */}
-            {searchLimitReached && (
-                <span style={{color: '#d9534f', fontSize: '0.9rem', fontWeight: 'bold'}}>
-                    ⚠️ More than {SEARCH_LIMIT} results found. Please be more specific.
-                </span>
-            )}
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
+          <h3>
+            Results{" "}
+            {hasSearched &&
+              (searchLimitReached
+                ? `(${SEARCH_LIMIT}+)`
+                : `(${results.length})`)}
+          </h3>
+
+          {/* WARNING MESSAGE if limit is hit */}
+          {searchLimitReached && (
+            <span
+              style={{
+                color: "#d9534f",
+                fontSize: "0.9rem",
+                fontWeight: "bold",
+              }}
+            >
+              ⚠️ More than {SEARCH_LIMIT} results found. Please be more
+              specific.
+            </span>
+          )}
         </div>
 
         {!loading && results.length === 0 && hasSearched && (
-            <p style={{ color: "#888", fontStyle: "italic" }}>No patients found.</p>
+          <p style={{ color: "#888", fontStyle: "italic" }}>
+            No patients found.
+          </p>
         )}
-        
+
         <ul className="list">
-            {visibleSearchResults.map(p => (
-                <li key={p.id} className="list-item">
-                    <div>
-                        <div style={{fontWeight:'bold', paddingBottom: '5px'}}>{p.name}</div>
-                        <div style={{fontSize:'0.9rem', color:'#666'}}>
-                             ID: {p.id} | DOB: {p.date_of_birth} | Last Visit: {getLastVisitDate(p.visits)}
-                        </div>
-                    </div>
-                    <button className="btn-secondary" onClick={() => onSelectPatient(p)}>Open</button>
-                </li>
-            ))}
+          {visibleSearchResults.map((p) => (
+            <li key={p.id} className="list-item">
+              <div>
+                <div style={{ fontWeight: "bold", paddingBottom: "5px" }}>
+                  {p.name}
+                </div>
+                <div style={{ fontSize: "0.9rem", color: "#666" }}>
+                  ID: {p.id} | DOB: {p.date_of_birth} | Last Visit:{" "}
+                  {getLastVisitDate(p.visits)}
+                </div>
+              </div>
+              <button
+                className="btn-secondary"
+                onClick={() => onSelectPatient(p)}
+              >
+                Open
+              </button>
+            </li>
+          ))}
         </ul>
       </div>
 

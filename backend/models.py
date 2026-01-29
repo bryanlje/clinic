@@ -8,8 +8,8 @@ class Patient(Base):
     
     id = Column(String, primary_key=True) # eg "A1147"
     date_registered = Column(Date, nullable=False, server_default=func.current_date())
-    name = Column(String, nullable=False)
-    date_of_birth = Column(Date, nullable=False)
+    name = Column(String, nullable=False, index=True)
+    date_of_birth = Column(Date, nullable=False, index=True)
     address = Column(String, nullable=False)
     phone_number_primary = Column(String, nullable=False)
     phone_number_secondary = Column(String, nullable=True)
@@ -37,8 +37,8 @@ class Visit(Base):
     __tablename__ = "visits"
     
     visit_id = Column(Integer, primary_key=True, autoincrement=True)
-    patient_id = Column(String, ForeignKey("patients.id"), nullable=False)
-    date = Column(Date, nullable=False)
+    patient_id = Column(String, ForeignKey("patients.id"), nullable=False, index=True)
+    date = Column(Date, nullable=False, index=True)
     time = Column(Time, nullable=False)
     weight = Column(Float, nullable=False)
     doctor_notes = Column(String, nullable=True)
@@ -50,7 +50,7 @@ class Visit(Base):
 class VisitAttachment(Base):
     __tablename__ = "visit_attachments"
     id = Column(Integer, primary_key=True, autoincrement=True)
-    visit_id = Column(Integer, ForeignKey("visits.visit_id"), nullable=False)
+    visit_id = Column(Integer, ForeignKey("visits.visit_id"), nullable=False, index=True)
     file_path = Column(String, nullable=False)       
     file_type = Column(String, nullable=False)       
     original_filename = Column(String, nullable=False) 

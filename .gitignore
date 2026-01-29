@@ -1,3 +1,5 @@
-uploads/
+backend/uploads/
 __pycache__/
+.env.prod
+gcp-credentials.json
 *.db

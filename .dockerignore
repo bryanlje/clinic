@@ -1,0 +1,18 @@
+# Ignore Python virtual environment (install fresh in Docker)
+backend/venv
+backend/.venv
+
+# Ignore local uploads (Production starts empty)
+backend/uploads
+
+# Ignore git history (reduces size)
+.git
+.gitignore
+
+# Ignore compiled python files
+**/__pycache__
+**/*.pyc
+**/*.pyo
+**/*.pyd
+
+# Keep 'alembic'! It contains database migration scripts.

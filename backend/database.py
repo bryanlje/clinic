@@ -1,9 +1,12 @@
+import os
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, DeclarativeBase
 
-# LOCAL CONNECTION STRING
-# When moving to GCP, only change this line!
-SQLALCHEMY_DATABASE_URL = "postgresql://postgres:leongclinic@localhost:5432/postgres"
+# If DATABASE_URL env var exists, use it. Otherwise fallback to local.
+SQLALCHEMY_DATABASE_URL = os.getenv(
+    "DATABASE_URL", 
+    "postgresql://postgres:leongclinic@localhost:5432/postgres"
+)
 
 engine = create_engine(SQLALCHEMY_DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
