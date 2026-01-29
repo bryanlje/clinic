@@ -1,5 +1,5 @@
 # --- Stage 1: Build React Frontend ---
-FROM node:18-alpine as build-frontend
+FROM node:22-alpine AS build-frontend
 WORKDIR /app/frontend
 # Copy package.json and install dependencies
 COPY frontend/package.json frontend/package-lock.json ./
@@ -35,6 +35,8 @@ ENV PYTHONPATH=/app
 
 # Expose port
 EXPOSE 8000
+
+WORKDIR /app/backend
 
 # Run Command: Gunicorn running FastAPI
 # "backend.main:app" means look in backend folder, main.py file, app object

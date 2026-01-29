@@ -1,9 +1,11 @@
-from pydantic import BaseModel
+from uuid import UUID
+from pydantic import BaseModel, UUID4
 from typing import List, Optional
 from datetime import date, time
 
 # --- Visit Schemas ---
 class VisitBase(BaseModel):
+    patient_id: UUID
     date: date
     time: time
     weight: float
@@ -11,10 +13,10 @@ class VisitBase(BaseModel):
     total_charge: Optional[float] = None
 
 class VisitUpdate(VisitBase):
-    pass
+    patient_id: Optional[UUID] = None
 
 class VisitCreate(VisitBase):
-    patient_id: str
+    pass
 
 class VisitAttachmentBase(BaseModel):
     id: int
@@ -27,14 +29,13 @@ class VisitAttachmentBase(BaseModel):
 
 class Visit(VisitBase):
     visit_id: int
-    patient_id: str
     attachments: List[VisitAttachmentBase] = []
     class Config:
         from_attributes = True
 
 # --- Patient Schemas ---
 class PatientBase(BaseModel):
-    id: str
+    display_id: str
     date_registered: Optional[date] = None
     name: str
     date_of_birth: date
@@ -63,6 +64,7 @@ class PatientCreate(PatientBase):
     pass
 
 class Patient(PatientBase):
+    id: UUID
     visits: List[Visit] = []
     class Config:
         from_attributes = True

@@ -10,7 +10,7 @@ export default function Dashboard({ onNavigateCreate, onSelectPatient }) {
   const [basicQuery, setBasicQuery] = useState("");
   const [advParams, setAdvParams] = useState({
     name: "",
-    patient_id: "",
+    display_id: "",
     address: "",
     date_registered_start: "",
     date_registered_end: "",
@@ -62,7 +62,7 @@ export default function Dashboard({ onNavigateCreate, onSelectPatient }) {
     setBasicQuery("");
     setAdvParams({
       name: "",
-      patient_id: "",
+      display_id: "",
       address: "",
       date_registered_start: "",
       date_registered_end: "",
@@ -150,9 +150,9 @@ export default function Dashboard({ onNavigateCreate, onSelectPatient }) {
               <div style={{ flex: 1 }}>
                 <label className="label-small">Patient ID</label>
                 <input
-                  value={advParams.patient_id}
+                  value={advParams.display_id}
                   onChange={(e) =>
-                    setAdvParams({ ...advParams, patient_id: e.target.value })
+                    setAdvParams({ ...advParams, display_id: e.target.value })
                   }
                   placeholder="Contains..."
                 />
@@ -379,7 +379,7 @@ export default function Dashboard({ onNavigateCreate, onSelectPatient }) {
                   {p.name}
                 </div>
                 <div style={{ fontSize: "0.9rem", color: "#666" }}>
-                  ID: {p.id} | DOB: {p.date_of_birth} | Last Visit:{" "}
+                  ID: {p.display_id} | DOB: {p.date_of_birth} | Last Visit:{" "}
                   {getLastVisitDate(p.visits)}
                 </div>
               </div>

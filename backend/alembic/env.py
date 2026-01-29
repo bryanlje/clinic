@@ -1,3 +1,4 @@
+import os
 from logging.config import fileConfig
 
 from sqlalchemy import engine_from_config
@@ -60,8 +61,14 @@ def run_migrations_online() -> None:
     and associate a connection with the context.
 
     """
+    # 1. GET THE URL FROM ENV VAR (If it exists)
+    # This allows Alembic to see the Cloud SQL URL passed to Docker
+    configuration = config.get_section(config.config_ini_section)
+    if os.getenv("DATABASE_URL"):
+        configuration["sqlalchemy.url"] = os.getenv("DATABASE_URL")
+
     connectable = engine_from_config(
-        config.get_section(config.config_ini_section, {}),
+        configuration, # <--- Pass the modified config here
         prefix="sqlalchemy.",
         poolclass=pool.NullPool,
     )

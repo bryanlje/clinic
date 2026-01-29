@@ -79,7 +79,7 @@ export default function PatientDetailView({ patientId, onBack }) {
         <div className="patient-title">
           <h1>{patient.name}</h1>
           <div className="patient-meta">
-            <span className="badge">ID: {patient.id}</span>
+            <span className="badge">ID: {patient.display_id}</span>
             <span className="badge">Reg: {patient.date_registered}</span>
             <span className="badge">DOB: {patient.date_of_birth}</span>
             <span className="badge" style={{ background: "#e3f2fd", color: "#0d47a1" }}>Age: {calculateAge(patient.date_of_birth)}</span>
@@ -156,7 +156,17 @@ export default function PatientDetailView({ patientId, onBack }) {
           <div className="info-grid">
             {/* ... EDIT FIELDS ... */}
             <div>
-              <h4 style={{ color: "#004cd8" }}>Basic & Contact</h4>
+              <h4 style={{ color: "#004cd8" }}>Meta, Basic & Contact</h4>
+              <div style={{ display: "flex", gap: "10px" }}>
+                <div style={{ flex: 1 }}>
+                  <label className="edit-label">Patient ID</label>
+                  <input className="edit-input" name="display_id" value={editFormData.display_id} onChange={handleEditChange} />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <label className="edit-label">Date Registered</label>
+                  <input type="date" className="edit-input" name="date_registered" value={editFormData.date_registered} onChange={handleEditChange} />
+                </div>
+              </div>
               <label className="edit-label">Name</label>
               <input className="edit-input" name="name" value={editFormData.name} onChange={handleEditChange} />
               <label className="edit-label">DOB</label>

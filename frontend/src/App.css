@@ -284,7 +284,7 @@ button {
   display: grid;
   grid-template-columns: 1fr 1fr; /* 50% left, 50% right */
   column-gap: 40px; /* Space between columns */
-  row-gap: 10px; /* Space between rows (e.g. between Contact and Birth) */
+  row-gap: 20px; /* Space between rows (e.g. between Contact and Birth) */
 }
 
 /* On mobile, stack them vertically */

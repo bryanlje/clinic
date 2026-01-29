@@ -30,7 +30,7 @@ app.add_middleware(
 @app.post("/api/patients/", response_model=schemas.Patient)
 def create_patient(patient: schemas.PatientCreate, db: Session = Depends(database.get_db)):
     # Check if ID exists
-    existing = db.query(models.Patient).filter(models.Patient.id == patient.id).first()
+    existing = db.query(models.Patient).filter(models.Patient.display_id == patient.display_id).first()
     if existing:
         raise HTTPException(status_code=400, detail="Patient ID already exists")
     
@@ -47,7 +47,7 @@ def search_patients(
 
     # Advanced specific params
     name: Optional[str] = None,
-    patient_id: Optional[str] = None,
+    display_id: Optional[str] = None,
     address: Optional[str] = None,
     date_registered_start: Optional[date] = None,
     date_registered_end: Optional[date] = None,
@@ -71,19 +71,19 @@ def search_patients(
         sql_query = sql_query.filter(
             or_(
                 models.Patient.name.ilike(f"%{query}%"),
-                models.Patient.id.ilike(f"%{query}%")
+                models.Patient.display_id.ilike(f"%{query}%")
             )
         )
 
     # 3. ADVANCED SEARCH (Specific fields)
-    if not query and not (name or patient_id or address or date_registered_start or date_registered_end or visit_start or visit_end or dob_start or dob_end):
+    if not query and not (name or display_id or address or date_registered_start or date_registered_end or visit_start or visit_end or dob_start or dob_end):
         return []
 
     if name:
         sql_query = sql_query.filter(models.Patient.name.ilike(f"%{name}%"))
 
-    if patient_id:
-        sql_query = sql_query.filter(models.Patient.id.ilike(f"%{patient_id}%"))
+    if display_id:
+        sql_query = sql_query.filter(models.Patient.display_id.ilike(f"%{display_id}%"))
 
     if address:
         sql_query = sql_query.filter(models.Patient.address.ilike(f"%{address}%"))
@@ -106,7 +106,7 @@ def search_patients(
     if dob_end:
         sql_query = sql_query.filter(models.Patient.date_of_birth <= dob_end)
 
-    return sql_query.order_by(models.Patient.name).limit(limit).all()
+    return sql_query.distinct().order_by(models.Patient.name).limit(limit).all()
 
 @app.get("/api/patients/{patient_id}", response_model=schemas.Patient)
 def get_patient(patient_id: str, db: Session = Depends(database.get_db)):
@@ -162,12 +162,12 @@ def get_next_id(prefix: str, db: Session = Depends(database.get_db)):
     max_val = db.query(
         func.max(
             cast(
-                func.substring(models.Patient.id, prefix_len), 
+                func.substring(models.Patient.display_id, prefix_len), 
                 Integer
             )
         )
     ).filter(
-        models.Patient.id.ilike(f"{prefix}%")
+        models.Patient.display_id.ilike(f"{prefix}%")
     ).scalar() # scalar() gets the single value, not a list
 
     next_num = (max_val or 0) + 1

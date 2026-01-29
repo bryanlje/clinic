@@ -1,12 +1,18 @@
+import uuid
 from sqlalchemy import Column, Float, Integer, String, Boolean, Date, Time, ForeignKey, func
 from sqlalchemy.orm import relationship
-from sqlalchemy.dialects.postgresql import ARRAY
+from sqlalchemy.dialects.postgresql import ARRAY, UUID
 from database import Base
 
 class Patient(Base):
     __tablename__ = "patients"
     
-    id = Column(String, primary_key=True) # eg "A1147"
+    # id is surrogate key. Database handles it, users never handle it.
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+
+    # display_id is the business key used.
+    display_id = Column(String, unique=True, nullable=False, index=True)
+
     date_registered = Column(Date, nullable=False, server_default=func.current_date())
     name = Column(String, nullable=False, index=True)
     date_of_birth = Column(Date, nullable=False, index=True)
@@ -37,7 +43,7 @@ class Visit(Base):
     __tablename__ = "visits"
     
     visit_id = Column(Integer, primary_key=True, autoincrement=True)
-    patient_id = Column(String, ForeignKey("patients.id"), nullable=False, index=True)
+    patient_id = Column(UUID(as_uuid=True), ForeignKey("patients.id"), nullable=False, index=True)
     date = Column(Date, nullable=False, index=True)
     time = Column(Time, nullable=False)
     weight = Column(Float, nullable=False)

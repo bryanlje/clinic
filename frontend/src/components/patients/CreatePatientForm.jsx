@@ -5,7 +5,7 @@ import ConfirmButton from "../common/ConfirmButton";
 
 export default function CreatePatientForm({ onSuccess, onCancel }) {
   const [formData, setFormData] = useState({
-    id: "",
+    display_id: "",
     date_registered: new Date().toISOString().split("T")[0],
     name: "",
     date_of_birth: "",
@@ -36,7 +36,7 @@ export default function CreatePatientForm({ onSuccess, onCancel }) {
     setFormData({ ...formData, [name]: value });
 
     // Trigger suggestion logic only for ID field
-    if (name === "id") {
+    if (name === "display_id") {
       checkIdSuggestion(value);
     }
   };
@@ -100,7 +100,7 @@ export default function CreatePatientForm({ onSuccess, onCancel }) {
 
   const applySuggestion = () => {
     if (idSuggestion?.next_suggestion) {
-      setFormData({ ...formData, id: idSuggestion.next_suggestion });
+      setFormData({ ...formData, display_id: idSuggestion.next_suggestion });
       setIdSuggestion(null); // Hide after applying
     }
   };
@@ -116,9 +116,9 @@ export default function CreatePatientForm({ onSuccess, onCancel }) {
               <label>Patient ID</label>
               <div style={{ position: "relative" }}>
                 <input
-                  name="id"
+                  name="display_id"
                   onChange={handleChange}
-                  value={formData.id}
+                  value={formData.display_id}
                   required
                   placeholder="e.g. type 'A' to see last used"
                   autoComplete="off"
@@ -142,7 +142,7 @@ export default function CreatePatientForm({ onSuccess, onCancel }) {
                         Last used: <strong>{idSuggestion.last_id}</strong>.{" "}
                       </span>
                     ) : (
-                      <span>No records for '{formData.id}'. </span>
+                      <span>No records for '{formData.display_id}'. </span>
                     )}
 
                     <button
