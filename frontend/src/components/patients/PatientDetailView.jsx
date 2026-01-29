@@ -250,7 +250,7 @@ export default function PatientDetailView({ patientId, onBack }) {
         </div>
 
         {showVisitForm && (
-          <div style={{ marginBottom: "20px", paddingBottom: "20px", borderBottom: "2px dashed #eee" }}>
+          <div style={{ marginBottom: "20px", paddingBottom: "20px", borderBottom: "2px dashed #c9c9c9" }}>
             <CreateVisitForm patientId={patient.id} onSuccess={() => { setShowVisitForm(false); fetchPatient(); }} />
           </div>
         )}
@@ -272,7 +272,8 @@ export default function PatientDetailView({ patientId, onBack }) {
           style={{ border: 'none', padding: '12px 24px', fontSize: '0.8rem' }}
           onConfirm={handleDeletePatient}
           title={`Delete ${patient.name} (${patient.id})?`}
-          message="Are you sure you want to delete this ENTIRE patient file? All personal details and visit history will be permanently lost."
+          message="Are you sure you want to delete this ENTIRE patient file?
+          All personal details, visit history, and associated attachments will be permanently lost."
         >
           Delete Patient File
         </ConfirmButton>

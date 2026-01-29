@@ -54,6 +54,8 @@ def search_patients(
     dob_start: Optional[date] = None,
     dob_end: Optional[date] = None,
 
+    limit: int = 25,
+
     db: Session = Depends(database.get_db)
 ):
     sql_query = db.query(models.Patient)
@@ -96,7 +98,7 @@ def search_patients(
     if dob_end:
         sql_query = sql_query.filter(models.Patient.date_of_birth <= dob_end)
 
-    return sql_query.distinct().all()
+    return sql_query.order_by(models.Patient.name).limit(limit).all()
 
 @app.get("/api/patients/{patient_id}", response_model=schemas.Patient)
 def get_patient(patient_id: str, db: Session = Depends(database.get_db)):
@@ -117,6 +119,30 @@ def update_patient(patient_id: str, patient_update: schemas.PatientCreate, db: S
     db.commit()
     db.refresh(db_patient)
     return db_patient
+
+@app.delete("/api/patients/{patient_id}")
+async def delete_patient(patient_id: str, db: Session = Depends(database.get_db)):
+    # 1. Find the patient
+    patient = db.query(models.Patient).filter(models.Patient.id == patient_id).first()
+    
+    if not patient:
+        raise HTTPException(status_code=404, detail="Patient not found")
+
+    # 2. CLEANUP: Delete physical files associated with this patient
+    try:
+        for visit in patient.visits:
+            for attachment in visit.attachments:
+                # Use the storage helper we created earlier to delete from Disk or GCP
+                await storage.delete_file(attachment.file_path)
+    except Exception as e:
+        print(f"Warning: Error cleaning up files for patient {patient_id}: {e}")
+        # Continue execution - still delete the DB record even if file deletion fails.
+
+    # 3. Delete the Patient Record
+    db.delete(patient)
+    db.commit()
+
+    return {"status": "success", "message": f"Patient {patient.name} and all associated records deleted."}
 
 @app.post("/api/visits/", response_model=schemas.Visit)
 def create_visit(visit: schemas.VisitCreate, db: Session = Depends(database.get_db)):
@@ -148,19 +174,26 @@ def update_visit(visit_id: int, visit_update: schemas.VisitUpdate, db: Session =
     return db_visit
 
 @app.delete("/api/visits/{visit_id}")
-def delete_visit(visit_id: int, db: Session = Depends(database.get_db)):
+async def delete_visit(visit_id: int, db: Session = Depends(database.get_db)):
     # 1. Find the visit
     db_visit = db.query(models.Visit).filter(models.Visit.visit_id == visit_id).first()
     
-    # 2. Check if exists
     if not db_visit:
         raise HTTPException(status_code=404, detail="Visit not found")
     
-    # 3. Delete and commit
+    # 2. Delete physical files (Local or GCP)
+    if db_visit.attachments:
+        for attachment in db_visit.attachments:
+            try:
+                await storage.delete_file(attachment.file_path)
+            except Exception as e:
+                print(f"Error deleting file {attachment.file_path}: {e}")
+
+    # 4. Delete and commit
     db.delete(db_visit)
     db.commit()
     
-    return {"detail": "Visit deleted successfully"}
+    return {"detail": "Visit and attachments deleted successfully"}
 
 # Mount uploads folder for local dev
 os.makedirs("uploads", exist_ok=True)

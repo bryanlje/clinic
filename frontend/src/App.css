@@ -14,7 +14,9 @@ body {
   background-color: var(--bg-color);
   color: var(--text-dark);
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu,
+    Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -34,8 +36,8 @@ body {
   color: white;
   padding: 20px 20px;
   border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-  font-family: Georgia, 'Times New Roman', Times, serif;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  font-family: Georgia, "Times New Roman", Times, serif;
 }
 
 .header h1 {
@@ -64,7 +66,9 @@ body {
   margin-bottom: 20px;
 }
 
-h2, h3, h4 {
+h2,
+h3,
+h4 {
   margin-top: 0;
   color: var(--text-dark);
 }
@@ -89,7 +93,9 @@ label {
   color: var(--text-light);
 }
 
-input, textarea, select {
+input,
+textarea,
+select {
   width: 100%;
   padding: 10px;
   border: 1px solid #ccc;
@@ -99,7 +105,8 @@ input, textarea, select {
   box-sizing: border-box; /* Ensures padding doesn't break width */
 }
 
-input:focus, textarea:focus {
+input:focus,
+textarea:focus {
   outline: none;
   border-color: var(--primary-color);
   box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
@@ -115,15 +122,31 @@ button {
   transition: all 0.2s;
 }
 
-.btn-primary { background: var(--primary-color); color: white; }
-.btn-primary:hover { background: var(--primary-hover); }
+.btn-primary {
+  background: var(--primary-color);
+  color: white;
+}
+.btn-primary:hover {
+  background: var(--primary-hover);
+}
 
-.btn-secondary { background: #e2e6ea; color: var(--text-dark); }
-.btn-secondary:hover { background: #dbe0e5; }
+.btn-secondary {
+  background: #e2e6ea;
+  color: var(--text-dark);
+}
+.btn-secondary:hover {
+  background: #dbe0e5;
+}
 
-.btn-success { background: var(--success-color); color: white; }
+.btn-success {
+  background: var(--success-color);
+  color: white;
+}
 
-.btn-danger { background: var(--danger-color); color: white;}
+.btn-danger {
+  background: var(--danger-color);
+  color: white;
+}
 
 .fab {
   position: fixed;
@@ -152,7 +175,9 @@ button {
   padding: 15px;
   border-bottom: 1px solid #eee;
 }
-.list-item:last-child { border-bottom: none; }
+.list-item:last-child {
+  border-bottom: none;
+}
 
 .detail-grid {
   display: grid;
@@ -161,7 +186,10 @@ button {
 }
 
 @media (max-width: 768px) {
-  .detail-grid, .form-grid { grid-template-columns: 1fr; }
+  .detail-grid,
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* --- VISITS --- */
@@ -191,9 +219,18 @@ button {
   align-items: center;
 }
 
-.visit-date { font-weight: bold; color: var(--text-dark); }
-.visit-note { color: var(--text-light); font-size: 0.95rem; }
-.visit-charge { color: var(--success-color); font-weight: bold; }
+.visit-date {
+  font-weight: bold;
+  color: var(--text-dark);
+}
+.visit-note {
+  color: var(--text-light);
+  font-size: 0.95rem;
+}
+.visit-charge {
+  color: var(--success-color);
+  font-weight: bold;
+}
 
 .input-row {
   display: flex;
@@ -206,7 +243,7 @@ button {
   background: white;
   padding: 20px;
   border-radius: 8px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
   margin-bottom: 20px;
   display: flex;
   justify-content: space-between;
@@ -242,7 +279,7 @@ button {
   display: grid;
   grid-template-columns: 1fr 1fr; /* 50% left, 50% right */
   column-gap: 40px; /* Space between columns */
-  row-gap: 10px;    /* Space between rows (e.g. between Contact and Birth) */
+  row-gap: 10px; /* Space between rows (e.g. between Contact and Birth) */
 }
 
 /* On mobile, stack them vertically */
@@ -271,7 +308,10 @@ button {
 /* --- CONFIRMATION MODAL --- */
 .modal-overlay {
   position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   background: rgba(0, 0, 0, 0.5); /* Dimmed background */
   display: flex;
   justify-content: center;
@@ -283,7 +323,7 @@ button {
   background: white;
   padding: 40px;
   border-radius: 8px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
   min-width: 300px;
   text-align: center;
 }
@@ -351,8 +391,14 @@ button {
 }
 
 @keyframes slideDown {
-  from { opacity: 0; transform: translateY(-10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .visit-edit-form textarea {
@@ -386,12 +432,17 @@ button {
   text-decoration: underline;
 }
 
-/* Optional: Add some spacing to the main content wrapper if needed */
 .main-content {
-  animation: fadeIn 0.5s ease-in-out;
+  animation: fadeIn 0.2s ease-in-out;
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(5px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

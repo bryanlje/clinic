@@ -14,6 +14,8 @@ export default function Dashboard({ onNavigateCreate, onSelectPatient }) {
     dob_start: "", dob_end: "",
   });
 
+  const SEARCH_LIMIT = 25;
+
   const handleBasicSearch = async (e) => {
     e.preventDefault();
     if (!basicQuery.trim()) return;
@@ -34,6 +36,10 @@ export default function Dashboard({ onNavigateCreate, onSelectPatient }) {
     setHasSearched(true);
     try {
       const queryParams = new URLSearchParams(paramsObj);
+
+      // Append the SEARCH_LIMIT param
+      queryParams.append("limit", SEARCH_LIMIT + 1)
+
       const res = await axios.get(`${API_URL}/patients/search/?${queryParams.toString()}`);
       setResults(res.data);
     } catch (err) {
@@ -54,6 +60,21 @@ export default function Dashboard({ onNavigateCreate, onSelectPatient }) {
     setResults([]);
     setHasSearched(false);
   };
+
+  const getLastVisitDate = (visits) => {
+    if (!visits || visits.length === 0) return "N/A";
+
+    // 1. Sort visits by date (descending: newest first)
+    // 2. Pick the first one
+    const sortedVisits = [...visits].sort((a, b) => {
+      return new Date(b.date) - new Date(a.date);
+    });
+
+    return sortedVisits[0].date;
+  };
+
+  const searchLimitReached = results.length > SEARCH_LIMIT;
+  const visibleSearchResults = results.slice(0, SEARCH_LIMIT);
 
   return (
     <div>
@@ -160,18 +181,28 @@ export default function Dashboard({ onNavigateCreate, onSelectPatient }) {
       </div>
 
       <div className="card">
-        <h3>Results {hasSearched && `(${results.length})`}</h3>
+        <div style={{display:'flex', justifyContent:'space-between', alignItems:'center'}}>
+            <h3>Results {hasSearched && (searchLimitReached ? `(${SEARCH_LIMIT}+)` : `(${results.length})`)}</h3>
+            
+            {/* WARNING MESSAGE if limit is hit */}
+            {searchLimitReached && (
+                <span style={{color: '#d9534f', fontSize: '0.9rem', fontWeight: 'bold'}}>
+                    ⚠️ More than {SEARCH_LIMIT} results found. Please be more specific.
+                </span>
+            )}
+        </div>
+
         {!loading && results.length === 0 && hasSearched && (
             <p style={{ color: "#888", fontStyle: "italic" }}>No patients found.</p>
         )}
         
         <ul className="list">
-            {results.map(p => (
+            {visibleSearchResults.map(p => (
                 <li key={p.id} className="list-item">
                     <div>
                         <div style={{fontWeight:'bold', paddingBottom: '5px'}}>{p.name}</div>
                         <div style={{fontSize:'0.9rem', color:'#666'}}>
-                             ID: {p.id} | DOB: {p.date_of_birth}
+                             ID: {p.id} | DOB: {p.date_of_birth} | Last Visit: {getLastVisitDate(p.visits)}
                         </div>
                     </div>
                     <button className="btn-secondary" onClick={() => onSelectPatient(p)}>Open</button>
