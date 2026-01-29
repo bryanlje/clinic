@@ -113,11 +113,11 @@ export default function CreateVisitForm({ patientId, onSuccess }) {
         <small style={{color: '#666'}}>Max 1 file (JPG/PNG/PDF)</small>
       </div>
       
-      <div style={{ marginTop: "10px" }}>
+      <div style={{ marginTop: "20px" }}>
         <label>Doctor's Notes</label>
         <textarea
-          rows="3"
-          placeholder="Diagnosis, treatment details..."
+          rows="6"
+          placeholder="Enter here..."
           value={formData.doctor_notes}
           onChange={(e) =>
             setFormData({ ...formData, doctor_notes: e.target.value })

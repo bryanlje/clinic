@@ -35,6 +35,7 @@ class Visit(VisitBase):
 # --- Patient Schemas ---
 class PatientBase(BaseModel):
     id: str
+    date_registered: Optional[date] = None
     name: str
     date_of_birth: date
     address: str

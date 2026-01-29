@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Float, Integer, String, Boolean, Date, Time, ForeignKey
+from sqlalchemy import Column, Float, Integer, String, Boolean, Date, Time, ForeignKey, func
 from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import ARRAY
 from database import Base
@@ -7,6 +7,7 @@ class Patient(Base):
     __tablename__ = "patients"
     
     id = Column(String, primary_key=True) # eg "A1147"
+    date_registered = Column(Date, nullable=False, server_default=func.current_date())
     name = Column(String, nullable=False)
     date_of_birth = Column(Date, nullable=False)
     address = Column(String, nullable=False)

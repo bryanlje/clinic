@@ -80,6 +80,7 @@ export default function PatientDetailView({ patientId, onBack }) {
           <h1>{patient.name}</h1>
           <div className="patient-meta">
             <span className="badge">ID: {patient.id}</span>
+            <span className="badge">Reg: {patient.date_registered}</span>
             <span className="badge">DOB: {patient.date_of_birth}</span>
             <span className="badge" style={{ background: "#e3f2fd", color: "#0d47a1" }}>Age: {calculateAge(patient.date_of_birth)}</span>
           </div>

@@ -144,6 +144,41 @@ async def delete_patient(patient_id: str, db: Session = Depends(database.get_db)
 
     return {"status": "success", "message": f"Patient {patient.name} and all associated records deleted."}
 
+@app.get("/api/patients/next-id/{prefix}")
+def get_next_id(prefix: str, db: Session = Depends(database.get_db)):
+    # 1. Get all IDs starting with this prefix (case insensitive)
+    # Fetch only the ID column to be fast
+    results = db.query(models.Patient.id)\
+                .filter(models.Patient.id.ilike(f"{prefix}%"))\
+                .all()
+    
+    # 2. If no patients found with this prefix
+    if not results:
+        return {
+            "last_id": None, 
+            "next_suggestion": f"{prefix.upper()}1"
+        }
+    
+    # 3. Find the highest number (Strip the prefix and convert the rest to an integer)
+    highest_num = 0
+    
+    for row in results:
+        pid = row[0] # row is a tuple ('B1034',)
+        
+        # Remove the prefix to find the number part
+        # Logic: Assume the prefix is whatever the user typed (e.g. 1 char 'B')
+        num_part = pid[len(prefix):] 
+        
+        if num_part.isdigit():
+            val = int(num_part)
+            if val > highest_num:
+                highest_num = val
+                
+    return {
+        "last_id": f"{prefix.upper()}{highest_num}" if highest_num > 0 else None,
+        "next_suggestion": f"{prefix.upper()}{highest_num + 1}"
+    }
+
 @app.post("/api/visits/", response_model=schemas.Visit)
 def create_visit(visit: schemas.VisitCreate, db: Session = Depends(database.get_db)):
     db_visit = models.Visit(**visit.dict())
