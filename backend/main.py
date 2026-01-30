@@ -224,12 +224,23 @@ def update_visit(visit_id: int, visit_update: schemas.VisitUpdate, db: Session =
     db_visit.date = visit_update.date
     db_visit.time = visit_update.time
     db_visit.weight = visit_update.weight
-    db_visit.total_charge = visit_update.total_charge
+    db_visit.age_at_visit = visit_update.age_at_visit
     db_visit.doctor_notes = visit_update.doctor_notes
+    
+    # Financial Updates
+    db_visit.total_charge = visit_update.total_charge
+    db_visit.payment_method = visit_update.payment_method
+    db_visit.receipt_number = visit_update.receipt_number 
 
-    # 3. Handle Dispensations (Full Replace Strategy)
+    # MC Updates
+    db_visit.mc_days = visit_update.mc_days             
+    db_visit.mc_start_date = visit_update.mc_start_date 
+    db_visit.mc_end_date = visit_update.mc_end_date     
+
+    # 4. Handle Dispensations (Full Replace Strategy)
     # A. Delete existing items for this visit
     db.query(models.DispensationItem).filter(models.DispensationItem.visit_id == visit_id).delete()
+    
     # B. Add the new list
     if visit_update.dispensations:
         for item in visit_update.dispensations:

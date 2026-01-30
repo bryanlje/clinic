@@ -47,9 +47,21 @@ class Visit(Base):
     patient_id = Column(UUID(as_uuid=True), ForeignKey("patients.id"), nullable=False, index=True)
     date = Column(Date, nullable=False, index=True)
     time = Column(Time, nullable=False)
+
+    # Clinical data
     weight = Column(Float, nullable=False)
+    age_at_visit = Column(String, nullable=True)
     doctor_notes = Column(String, nullable=True)
+
+    # Financial data
     total_charge = Column(Float, nullable=True)
+    payment_method = Column(String, nullable=True) # Cash, TnG, Online
+    receipt_number = Column(String, nullable=True)
+
+    # MC data
+    mc_days = Column(Integer, nullable=True)
+    mc_start_date = Column(Date, nullable=True)
+    mc_end_date = Column(Date, nullable=True)
     
     patient = relationship("Patient", back_populates="visits")
     attachments = relationship("VisitAttachment", back_populates="visit", cascade="all, delete-orphan")

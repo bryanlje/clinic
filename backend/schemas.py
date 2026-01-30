@@ -1,7 +1,7 @@
 from uuid import UUID
 from pydantic import BaseModel, UUID4
 from typing import List, Optional
-from datetime import date, time
+from datetime import date as date_type, time as time_type
 
 # --- Dispensation Schemas ---
 class DispensationItemBase(BaseModel):
@@ -23,11 +23,21 @@ class DispensationItem(DispensationItemBase):
 # --- Visit Schemas ---
 class VisitBase(BaseModel):
     patient_id: UUID
-    date: date
-    time: time
+    date: date_type
+    time: time_type
     weight: float
+    age_at_visit: Optional[str] = None
     doctor_notes: Optional[str] = None
+    
+    # Financials
     total_charge: Optional[float] = None
+    payment_method: Optional[str] = None
+    receipt_number: Optional[str] = None
+    
+    # MC
+    mc_days: Optional[int] = None
+    mc_start_date: Optional[date_type] = None
+    mc_end_date: Optional[date_type] = None
 
 class VisitUpdate(VisitBase):
     patient_id: Optional[UUID] = None
@@ -56,9 +66,9 @@ class Visit(VisitBase):
 # --- Patient Schemas ---
 class PatientBase(BaseModel):
     display_id: str
-    date_registered: Optional[date] = None
+    date_registered: Optional[date_type] = None
     name: str
-    date_of_birth: date
+    date_of_birth: date_type
     address: str
     phone_number_primary: str
     phone_number_secondary: Optional[str] = None

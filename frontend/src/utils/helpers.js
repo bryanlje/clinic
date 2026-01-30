@@ -21,3 +21,29 @@ export function calculateAge(dobString) {
 
   return `${years}Y ${months}M`;
 }
+
+// Helper to calculate Age String (e.g., "10Y 5M")
+export function calculateVisitAge(dobString, visitDateString) {
+  if (!dobString || !visitDateString) return "";
+  const dob = new Date(dobString);
+  const visit = new Date(visitDateString);
+  
+  let years = visit.getFullYear() - dob.getFullYear();
+  let months = visit.getMonth() - dob.getMonth();
+  
+  if (months < 0 || (months === 0 && visit.getDate() < dob.getDate())) {
+    years--;
+    months += 12;
+  }
+  // Adjust months if days are effectively negative in the partial month
+  if (visit.getDate() < dob.getDate()) {
+     months--;
+  }
+  // normalize
+  if (months < 0) {
+      months += 12;
+      years--; 
+  }
+  
+  return `${years}Y ${months}M`;
+};

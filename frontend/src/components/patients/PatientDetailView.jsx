@@ -579,6 +579,7 @@ export default function PatientDetailView({ patientId, onBack }) {
           >
             <CreateVisitForm
               patientId={patient.id}
+              patientDOB={patient.date_of_birth}
               onSuccess={() => {
                 setShowVisitForm(false);
                 fetchPatient();
@@ -598,6 +599,7 @@ export default function PatientDetailView({ patientId, onBack }) {
                 key={v.visit_id}
                 visit={v}
                 patientId={patient.id}
+                patientDOB={patient.date_of_birth}
                 onUpdate={fetchPatient}
               />
             ))}

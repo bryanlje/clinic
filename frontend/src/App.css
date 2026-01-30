@@ -13,6 +13,14 @@
   --border-color: #ddd;
   --secondary-grey: #e2e6ea;
   --secondary-grey-dark: #d0d5da;
+  --item-background-grey: #f8f9fa;
+}
+
+/* Force all form elements to use the same font as the rest of the app */
+input,
+textarea,
+select {
+  font-family: inherit;
 }
 
 body {
@@ -95,7 +103,7 @@ label {
   margin-bottom: 5px;
   font-weight: 600;
   font-size: 0.9rem;
-  color: var(--text-light);
+  color: var(--text-dark);
 }
 
 input,
@@ -106,7 +114,7 @@ select {
   border: 1px solid #ccc;
   border-radius: 6px;
   background-color: #fff; /* Fixes dark mode input issues */
-  color: #333;
+  color: var(--text-dark);
   box-sizing: border-box; /* Ensures padding doesn't break width */
 }
 
@@ -221,7 +229,7 @@ button {
 }
 
 .visit-item {
-  background: #f8f9fa;
+  background: var(--item-background-grey);
   border: 1px solid #e9ecef;
   border-radius: 6px;
   padding: 12px;
@@ -354,7 +362,7 @@ button {
   font-size: 1.2rem;
   font-weight: bold;
   margin-bottom: 10px;
-  color: #333;
+  color: var(--text-dark);
 }
 
 .modal-actions {
@@ -392,7 +400,7 @@ button {
   gap: 15px;
   padding: 12px 15px;
   align-items: center;
-  background: #f8f9fa;
+  background: var(--item-background-grey);
   user-select: none;
 }
 
@@ -472,7 +480,7 @@ button {
 /* --- MEDICINE / DISPENSATION SECTION --- */
 .medicine-section {
   margin-top: 15px;
-  background: #f8f9fa;
+  background: var(--item-background-grey);
   padding: 15px;
   border-radius: 8px;
   border: 1px solid #e9ecef;
@@ -628,4 +636,69 @@ button {
 .menu-item:hover {
   background: var(--secondary-grey-dark);
   color: var(--primary-color);
+}
+
+/* Generalized Section Container (replaces .medicine-section) */
+.section-container {
+  margin-top: 15px;
+  background: var(--item-background-grey, #f8f9fa);
+  padding: 15px;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+}
+
+.section-header {
+  margin: 0 0 5px 0;
+  font-size: 0.9rem;
+  color: var(--text-dark, var(--text-dark));
+  font-weight: 600;
+  /* border-bottom: 1px solid #e0e0e0; */
+  padding-bottom: 8px;
+}
+
+/* Generalized Table (replaces .medicine-table) */
+.custom-table {
+  width: 100%;
+  margin-bottom: 15px;
+  font-size: 0.9rem;
+  border-collapse: collapse;
+  background: white;
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.custom-table th {
+  text-align: left;
+  padding: 10px;
+  background: #e9ecef;
+  color: var(--text-dark, var(--text-dark));
+  font-weight: 600;
+}
+
+.custom-table td {
+  padding: 10px;
+  border-bottom: 1px solid #eee;
+}
+
+/* Input Row for adding items */
+.input-group-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+/* Radio Buttons */
+.radio-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 5px;
+    cursor: pointer;
+    font-weight: normal;
+}
+
+.radio-label input {
+    width: auto;
+    margin: 0;
 }
