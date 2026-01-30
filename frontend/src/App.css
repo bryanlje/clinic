@@ -9,8 +9,10 @@
   --card-bg: #ffffff;
   --text-dark: #333333;
   --text-light: #666666;
-  --border-light: #eee
+  --border-light: #eee;
   --border-color: #ddd;
+  --secondary-grey: #e2e6ea;
+  --secondary-grey-dark: #d0d5da;
 }
 
 body {
@@ -134,11 +136,11 @@ button {
 }
 
 .btn-secondary {
-  background: #e2e6ea;
+  background: var(--secondary-grey);
   color: var(--text-dark);
 }
 .btn-secondary:hover {
-  background: #dbe0e5;
+  background: var(--secondary-grey-dark);
 }
 
 .btn-success {
@@ -319,6 +321,10 @@ button {
   font-weight: bold;
   margin-bottom: 2px;
   display: block;
+}
+
+.edit-title {
+  margin-bottom: 10px;
 }
 
 /* --- CONFIRMATION MODAL --- */
@@ -583,4 +589,43 @@ button {
 .medicine-edit-item span {
   font-size: 0.9rem;
   color: var(--text-dark);
+}
+
+/* Container for the dropdown */
+.dropdown-menu {
+  position: absolute;
+  right: 0;
+  top: 110%;
+  background: white;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  border-radius: 6px;
+  z-index: 100;
+  width: 220px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Individual menu item style */
+.menu-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 15px 18px;
+  background: white;
+  border: none;
+  border-bottom: 1px solid #f0f0f0;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: #333;
+}
+
+.menu-item:last-child {
+  border-bottom: none;
+}
+
+.menu-item:hover {
+  background: var(--secondary-grey-dark);
+  color: var(--primary-color);
 }

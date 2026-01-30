@@ -1,4 +1,5 @@
 backend/uploads/
+backend/venv/
 __pycache__/
 .env.prod
 gcp-credentials.json

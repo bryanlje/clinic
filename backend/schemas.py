@@ -66,7 +66,8 @@ class PatientBase(BaseModel):
     mother_name: Optional[str] = None
     mother_occupation: Optional[str] = None
     para: Optional[str] = None
-    languages: List[str] = []
+    languages_parents: List[str] = []
+    languages_children: List[str] = []
     hospital: Optional[str] = None
     delivery: Optional[str] = None
     birth_weight_kg: Optional[float] = None
