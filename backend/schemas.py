@@ -3,6 +3,22 @@ from pydantic import BaseModel, UUID4
 from typing import List, Optional
 from datetime import date, time
 
+# --- Dispensation Schemas ---
+class DispensationItemBase(BaseModel):
+    medicine_name: str
+    instructions: Optional[str] = None
+    quantity: str
+    is_dispensed: bool = True
+
+class DispensationItemCreate(DispensationItemBase):
+    pass
+
+class DispensationItem(DispensationItemBase):
+    id: int
+    visit_id: int
+    class Config:
+        from_attributes = True
+
 # --- Visit Schemas ---
 class VisitBase(BaseModel):
     patient_id: UUID
@@ -14,9 +30,10 @@ class VisitBase(BaseModel):
 
 class VisitUpdate(VisitBase):
     patient_id: Optional[UUID] = None
+    dispensations: List[DispensationItemCreate] = []
 
 class VisitCreate(VisitBase):
-    pass
+    dispensations: List[DispensationItemCreate] = []
 
 class VisitAttachmentBase(BaseModel):
     id: int
@@ -30,6 +47,8 @@ class VisitAttachmentBase(BaseModel):
 class Visit(VisitBase):
     visit_id: int
     attachments: List[VisitAttachmentBase] = []
+    dispensations: List[DispensationItem] = []
+    
     class Config:
         from_attributes = True
 

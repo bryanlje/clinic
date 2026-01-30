@@ -1,12 +1,15 @@
 :root {
   --primary-color: #0948bd;
   --primary-hover: #00448d;
-  --success-color: #28a745;
+  --success-color: #1cb440;
+  --success-color-dark: #1a9b38;
   --danger-color: #cf192b;
+  --danger-color-dark: #b41625;
   --bg-color: #f0f2f5;
   --card-bg: #ffffff;
   --text-dark: #333333;
   --text-light: #666666;
+  --border-light: #eee
   --border-color: #ddd;
 }
 
@@ -143,9 +146,17 @@ button {
   color: white;
 }
 
+.btn-success:hover {
+  background: var(--success-color-dark);
+}
+
 .btn-danger {
   background: var(--danger-color);
   color: white;
+}
+
+.btn-danger:hover {
+  background-color: var(--danger-color-dark);
 }
 
 .fab {
@@ -173,7 +184,7 @@ button {
   justify-content: space-between;
   align-items: center;
   padding: 15px;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--border-light);
 }
 .list-item:last-child {
   border-bottom: none;
@@ -357,7 +368,7 @@ button {
 
 .visit-item-container {
   background: #fff;
-  border: 1px solid #eee;
+  border: 1px solid var(--border-light);
   border-radius: 6px;
   margin-bottom: 10px;
   overflow: hidden;
@@ -390,7 +401,7 @@ button {
 /* The expanded body */
 .visit-details-body {
   padding: 20px;
-  border-top: 1px solid #eee;
+  border-top: 1px solid var(--border-light);
   background: white;
   animation: slideDown 0.2s ease-out;
 }
@@ -416,7 +427,7 @@ button {
 .breadcrumb-bar {
   /* padding: 10px 0; */
   margin-bottom: 10px;
-  border-bottom: 1px solid #eee; /* Subtle separator */
+  border-bottom: 1px solid var(--border-light); /* Subtle separator */
 }
 
 .btn-link {
@@ -450,4 +461,126 @@ button {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+/* --- MEDICINE / DISPENSATION SECTION --- */
+.medicine-section {
+  margin-top: 15px;
+  background: #f8f9fa;
+  padding: 15px;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+}
+
+.medicine-header {
+  margin: 0 0 15px 0;
+  font-size: 1rem;
+  color: var(--text-dark);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Table for Create Mode */
+.medicine-table {
+  width: 100%;
+  margin-bottom: 15px;
+  font-size: 0.9rem;
+  border-collapse: collapse;
+  background: white;
+  border-radius: 6px;
+  overflow: hidden; /* For rounded corners on table */
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.medicine-table th {
+  text-align: left;
+  padding: 10px;
+  background: #e9ecef;
+  color: var(--text-dark);
+  font-weight: 600;
+}
+
+.medicine-table td {
+  padding: 10px;
+  border-bottom: 1px solid var(--border-light);
+  color: var(--text-dark);
+}
+
+.medicine-table tr:last-child td {
+  border-bottom: none;
+}
+
+/* Input Row for Adding Meds */
+.medicine-input-group {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+/* Buttons */
+.btn-icon-danger {
+  color: var(--danger-color);
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 1.1rem;
+  padding: 0 5px;
+  transition: transform 0.2s;
+}
+
+.btn-icon-danger:hover {
+  transform: scale(1.2);
+}
+
+.btn-add {
+  background: var(--success-color);
+  color: white;
+}
+
+.btn-add:hover {
+  background: var(--success-color-dark);
+}
+
+/* --- VISIT ITEM: READ ONLY DISPLAY --- */
+.medicine-display-box {
+  margin-top: 15px;
+  /* background: #f1f8ff; Light blue tint */
+  /* padding: 15px; */
+  /* border-radius: 6px; */
+  /* border-left: 4px solid var(--primary-color); */
+}
+
+.medicine-display-list {
+  margin: 8px 0 0 0;
+  padding-left: 20px;
+}
+
+.medicine-display-list li {
+  margin-bottom: 6px;
+  color: #444;
+  line-height: 1.4;
+}
+
+/* --- VISIT ITEM: EDIT MODE LIST --- */
+.medicine-edit-list {
+  list-style: none;
+  padding: 0;
+  margin-bottom: 15px;
+}
+
+.medicine-edit-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  background: white;
+  border: 1px solid #dee2e6;
+  margin-bottom: 6px;
+  border-radius: 4px;
+}
+
+.medicine-edit-item span {
+  font-size: 0.9rem;
+  color: var(--text-dark);
 }

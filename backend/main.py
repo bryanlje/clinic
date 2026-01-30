@@ -179,8 +179,27 @@ def get_next_id(prefix: str, db: Session = Depends(database.get_db)):
 
 @app.post("/api/visits/", response_model=schemas.Visit)
 def create_visit(visit: schemas.VisitCreate, db: Session = Depends(database.get_db)):
-    db_visit = models.Visit(**visit.dict())
+    # 1. Separate dispensations from the main visit data
+    visit_data = visit.dict()
+    dispensations_data = visit_data.pop("dispensations", [])
+
+    # 2. Create the Visit Record
+    db_visit = models.Visit(**visit_data)
     db.add(db_visit)
+    db.commit()
+    db.refresh(db_visit)
+
+    # 3. Create Dispensation Records linked to this Visit
+    for item in dispensations_data:
+        db_dispensation = models.DispensationItem(
+            visit_id=db_visit.visit_id,
+            medicine_name=item['medicine_name'],
+            instructions=item.get('instructions'),
+            quantity=item['quantity'],
+            is_dispensed=item.get('is_dispensed', True)
+        )
+        db.add(db_dispensation)
+    
     db.commit()
     db.refresh(db_visit)
     return db_visit
@@ -194,12 +213,27 @@ def update_visit(visit_id: int, visit_update: schemas.VisitUpdate, db: Session =
     if not db_visit:
         raise HTTPException(status_code=404, detail="Visit not found")
 
-    # 3. Update the fields
+    # 3. Update basic fields
     db_visit.date = visit_update.date
     db_visit.time = visit_update.time
     db_visit.weight = visit_update.weight
     db_visit.total_charge = visit_update.total_charge
     db_visit.doctor_notes = visit_update.doctor_notes
+
+    # 3. Handle Dispensations (Full Replace Strategy)
+    # A. Delete existing items for this visit
+    db.query(models.DispensationItem).filter(models.DispensationItem.visit_id == visit_id).delete()
+    # B. Add the new list
+    if visit_update.dispensations:
+        for item in visit_update.dispensations:
+            new_item = models.DispensationItem(
+                visit_id=visit_id,
+                medicine_name=item.medicine_name,
+                instructions=item.instructions,
+                quantity=item.quantity,
+                is_dispensed=item.is_dispensed
+            )
+            db.add(new_item)
 
     db.commit()
     db.refresh(db_visit)

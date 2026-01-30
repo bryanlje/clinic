@@ -52,6 +52,7 @@ class Visit(Base):
     
     patient = relationship("Patient", back_populates="visits")
     attachments = relationship("VisitAttachment", back_populates="visit", cascade="all, delete-orphan")
+    dispensations = relationship("DispensationItem", back_populates="visit", cascade="all, delete-orphan")
 
 class VisitAttachment(Base):
     __tablename__ = "visit_attachments"
@@ -61,3 +62,19 @@ class VisitAttachment(Base):
     file_type = Column(String, nullable=False)       
     original_filename = Column(String, nullable=False) 
     visit = relationship("Visit", back_populates="attachments")
+
+class DispensationItem(Base):
+    __tablename__ = "dispensation_items"
+    
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    visit_id = Column(Integer, ForeignKey("visits.visit_id"), nullable=False, index=True)    
+    # Example: "Paracetamol 5ml"
+    medicine_name = Column(String, nullable=False)    
+    # Example: "tds PRM" (To be taken three times a day, as needed)
+    instructions = Column(String, nullable=True)    
+    # Example: "60ml" or "x1"
+    quantity = Column(String, nullable=False)    
+    # Optional: Track if this item was actually dispensed or just prescribed
+    is_dispensed = Column(Boolean, default=True) 
+
+    visit = relationship("Visit", back_populates="dispensations")

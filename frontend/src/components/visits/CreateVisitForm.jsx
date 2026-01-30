@@ -10,6 +10,7 @@ export default function CreateVisitForm({ patientId, onSuccess }) {
 
   const [selectedFile, setSelectedFile] = useState(null);
 
+  // Form State
   const [formData, setFormData] = useState({
     date: new Date().toISOString().split("T")[0],
     time: currentTime,
@@ -17,6 +18,23 @@ export default function CreateVisitForm({ patientId, onSuccess }) {
     doctor_notes: "",
     total_charge: "",
   });
+
+  // Dispensation State
+  const [dispensations, setDispensations] = useState([]);
+  const [medInput, setMedInput] = useState({ name: "", instructions: "", quantity: "" });
+
+  const addMedicine = () => {
+    if (!medInput.name || !medInput.quantity) {
+      alert("Medicine Name and Quantity are required");
+      return;
+    }
+    setDispensations([...dispensations, { ...medInput, is_dispensed: true }]);
+    setMedInput({ name: "", instructions: "", quantity: "" }); // Reset inputs
+  };
+
+  const removeMedicine = (index) => {
+    setDispensations(dispensations.filter((_, i) => i !== index));
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -28,6 +46,12 @@ export default function CreateVisitForm({ patientId, onSuccess }) {
         weight: parseFloat(formData.weight) || 0,
         total_charge: parseFloat(formData.total_charge) || 0,
         doctor_notes: formData.doctor_notes,
+        dispensations: dispensations.map(d => ({
+            medicine_name: d.name,
+            instructions: d.instructions,
+            quantity: d.quantity,
+            is_dispensed: true
+        }))
       };
 
       // 2. Step 1: Create the Visit Record
@@ -55,7 +79,7 @@ export default function CreateVisitForm({ patientId, onSuccess }) {
 
   return (
     <form onSubmit={handleSubmit}>
-      <h4>New Consultation Entry</h4>
+      <h4>New Medical Record</h4>
       <div className="input-row">
         <div style={{ flex: 1 }}>
           <label>Date</label>
@@ -124,10 +148,63 @@ export default function CreateVisitForm({ patientId, onSuccess }) {
           }
         />
       </div>
+
+      <div className="medicine-section">
+        <h5 className="medicine-header">Medication</h5>
+        
+        {dispensations.length > 0 && (
+          <table className="medicine-table">
+            <thead>
+              <tr>
+                <th style={{ width: '45%' }}>Item</th>
+                <th style={{ width: '25%' }}>Instruction</th>
+                <th style={{ width: '20%' }}>Quantity</th>
+                {/* <th style={{ width: '20%' }}></th> */}
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {dispensations.map((med, idx) => (
+                <tr key={idx}>
+                  <td>{med.name}</td>
+                  <td>{med.instructions}</td>
+                  <td>{med.quantity}</td>
+                  <td style={{textAlign: 'center'}}>
+                    <button type="button" onClick={() => removeMedicine(idx)} className="btn-icon-danger">✕</button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+
+        <div className="medicine-input-group">
+          <input 
+            style={{flex: 2}}
+            placeholder="Item" 
+            value={medInput.name} 
+            onChange={e => setMedInput({...medInput, name: e.target.value})}
+          />
+          <input 
+            style={{flex: 1}}
+            placeholder="Instruction" 
+            value={medInput.instructions} 
+            onChange={e => setMedInput({...medInput, instructions: e.target.value})}
+          />
+          <input 
+            style={{flex: 1}}
+            placeholder="Quantity" 
+            value={medInput.quantity} 
+            onChange={e => setMedInput({...medInput, quantity: e.target.value})}
+          />
+          <button type="button" onClick={addMedicine} className="btn-secondary btn-add">✔</button>
+        </div>
+      </div>
+
       <button
         type="submit"
         className="btn-primary"
-        style={{ marginTop: "10px", width: "100%" }}
+        style={{ marginTop: "20px", width: "100%" }}
       >
         Save Record
       </button>
