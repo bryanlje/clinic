@@ -20,7 +20,7 @@ export const Row = ({ label, value }) => (
   <div
     style={{
       display: "grid",
-      gridTemplateColumns: "110px 1fr",
+      gridTemplateColumns: "100px 1fr",
       fontSize: "0.95rem",
     }}
   >

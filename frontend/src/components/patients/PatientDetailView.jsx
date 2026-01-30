@@ -30,10 +30,12 @@ export default function PatientDetailView({ patientId, onBack }) {
   const handleDeletePatient = async () => {
     try {
       await axios.delete(`${API_URL}/patients/${patientId}`);
-      onBack(); 
+      onBack();
     } catch (err) {
       console.error(err);
-      alert("Failed to delete patient. Ensure all related visits are handled or check connection.");
+      alert(
+        "Failed to delete patient. Ensure all related visits are handled or check connection.",
+      );
     }
   };
 
@@ -41,24 +43,39 @@ export default function PatientDetailView({ patientId, onBack }) {
     setEditFormData({ ...editFormData, [e.target.name]: e.target.value });
   };
 
-  const handleEditLanguageChange = (e) => {
+  const handleEditLanguageChange = (e, fieldName) => {
     const { value, checked } = e.target;
-    const currentLanguages = editFormData.languages || [];
+
+    // Get the current list based on the field name (default to empty array)
+    const currentLanguages = editFormData[fieldName] || [];
+
+    let updatedLanguages;
     if (checked) {
-      setEditFormData({ ...editFormData, languages: [...currentLanguages, value] });
+      updatedLanguages = [...currentLanguages, value];
     } else {
-      setEditFormData({ ...editFormData, languages: currentLanguages.filter((l) => l !== value) });
+      updatedLanguages = currentLanguages.filter((l) => l !== value);
     }
+
+    // Update the specific field in state
+    setEditFormData({ ...editFormData, [fieldName]: updatedLanguages });
   };
 
   const savePatientDetails = async () => {
     try {
       const payload = {
         ...editFormData,
-        birth_weight_kg: editFormData.birth_weight_kg ? parseFloat(editFormData.birth_weight_kg) : null,
-        birth_length_cm: editFormData.birth_length_cm ? parseFloat(editFormData.birth_length_cm) : null,
-        birth_ofc_cm: editFormData.birth_ofc_cm ? parseInt(editFormData.birth_ofc_cm) : null,
-        tsh_mlul: editFormData.tsh_mlul ? parseInt(editFormData.tsh_mlul) : null,
+        birth_weight_kg: editFormData.birth_weight_kg
+          ? parseFloat(editFormData.birth_weight_kg)
+          : null,
+        birth_length_cm: editFormData.birth_length_cm
+          ? parseFloat(editFormData.birth_length_cm)
+          : null,
+        birth_ofc_cm: editFormData.birth_ofc_cm
+          ? parseInt(editFormData.birth_ofc_cm)
+          : null,
+        tsh_mlul: editFormData.tsh_mlul
+          ? parseInt(editFormData.tsh_mlul)
+          : null,
       };
 
       const res = await axios.put(`${API_URL}/patients/${patient.id}`, payload);
@@ -71,7 +88,12 @@ export default function PatientDetailView({ patientId, onBack }) {
     }
   };
 
-  if (!patient) return <div style={{ textAlign: "center", padding: "20px" }}>Loading Record...</div>;
+  if (!patient)
+    return (
+      <div style={{ textAlign: "center", padding: "20px" }}>
+        Loading Record...
+      </div>
+    );
 
   return (
     <div>
@@ -82,14 +104,19 @@ export default function PatientDetailView({ patientId, onBack }) {
             <span className="badge">ID: {patient.display_id}</span>
             <span className="badge">Reg: {patient.date_registered}</span>
             <span className="badge">DOB: {patient.date_of_birth}</span>
-            <span className="badge" style={{ background: "#e3f2fd", color: "#0d47a1" }}>Age: {calculateAge(patient.date_of_birth)}</span>
+            <span
+              className="badge"
+              style={{ background: "#e3f2fd", color: "#0d47a1" }}
+            >
+              Age: {calculateAge(patient.date_of_birth)}
+            </span>
           </div>
         </div>
         <button
           className={isEditing ? "btn-secondary" : "btn-primary"}
           onClick={() => {
             if (isEditing) {
-              setEditFormData(patient); 
+              setEditFormData(patient);
               setIsEditing(false);
             } else {
               setIsEditing(true);
@@ -101,7 +128,13 @@ export default function PatientDetailView({ patientId, onBack }) {
       </div>
 
       <div className="card">
-        <div style={{ display: "flex", justifyContent: "space-between", paddingBottom: "5px" }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            paddingBottom: "5px",
+          }}
+        >
           <h3>Patient Information</h3>
           {isEditing && (
             <ConfirmButton
@@ -121,132 +154,396 @@ export default function PatientDetailView({ patientId, onBack }) {
               <Section title="Contact Info">
                 <Row label="Address" value={patient.address} />
                 <Row label="Phone 1" value={patient.phone_number_primary} />
-                <Row label="Phone 2" value={patient.phone_number_secondary || "-"} />
+                <Row
+                  label="Phone 2"
+                  value={patient.phone_number_secondary || "-"}
+                />
               </Section>
               <Section title="Parents">
-                <Row label="Father" value={`${patient.father_name || "-"} (${patient.father_occupation || "-"})`} />
-                <Row label="Mother" value={`${patient.mother_name || "-"} (${patient.mother_occupation || "-"})`} />
+                <Row
+                  label="Father"
+                  value={`${patient.father_name || "-"} (${patient.father_occupation || "-"})`}
+                />
+                <Row
+                  label="Mother"
+                  value={`${patient.mother_name || "-"} (${patient.mother_occupation || "-"})`}
+                />
                 <Row label="Para" value={patient.para || "-"} />
               </Section>
               <Section title="Birth Details">
                 <Row label="Hospital" value={patient.hospital || "-"} />
                 <Row label="Delivery" value={patient.delivery || "-"} />
-                <Row label="Weight" value={patient.birth_weight_kg ? `${patient.birth_weight_kg} kg` : "-"} />
-                <Row label="Length" value={patient.birth_length_cm ? `${patient.birth_length_cm} cm` : "-"} />
-                <Row label="OFC" value={patient.birth_ofc_cm ? `${patient.birth_ofc_cm} cm` : "-"} />
+                <Row
+                  label="Weight"
+                  value={
+                    patient.birth_weight_kg
+                      ? `${patient.birth_weight_kg} kg`
+                      : "-"
+                  }
+                />
+                <Row
+                  label="Length"
+                  value={
+                    patient.birth_length_cm
+                      ? `${patient.birth_length_cm} cm`
+                      : "-"
+                  }
+                />
+                <Row
+                  label="OFC"
+                  value={
+                    patient.birth_ofc_cm ? `${patient.birth_ofc_cm} cm` : "-"
+                  }
+                />
               </Section>
               <Section title="Medical Profile">
-                <Row label="G6PD" value={patient.g6pd || "-"} />
-                <Row label="TSH" value={patient.tsh_mlul ? `${patient.tsh_mlul} mlU/L` : "-"} />
+                <Row 
+                  label="G6PD" 
+                  value={
+                    <span style={{ 
+                      color: patient.g6pd === "Deficient" ? "#d32f2f" : "inherit",
+                      fontWeight: patient.g6pd === "Deficient" ? "bold" : "normal"
+                    }}>
+                      {patient.g6pd || "-"}
+                    </span>
+                  }
+                />
+                <Row
+                  label="TSH"
+                  value={patient.tsh_mlul ? `${patient.tsh_mlul} mlU/L` : "-"}
+                />
                 <Row label="Feeding" value={patient.feeding || "-"} />
                 <Row label="Allergies" value={patient.allergies || "None"} />
-                <Row label="Languages" value={patient.languages?.join(", ") || "-"} />
+                <Row
+                  label="Languages (Parents)"
+                  value={patient.languages_parents?.join(", ") || "-"}
+                />
+                <Row
+                  label="Languages (Children)"
+                  value={patient.languages_children?.join(", ") || "-"}
+                />
               </Section>
             </div>
-            <div style={{ marginTop: "10px", borderTop: "1px solid #eee", paddingTop: "10px" }}>
-              <span style={{ fontWeight: "bold", color: "#555" }}>Vaccination History: </span>
-              <span style={{ fontStyle: "italic", color: "#555" }}>{patient.vaccination_summary || "None."}</span>
+            <div
+              style={{
+                marginTop: "10px",
+                borderTop: "1px solid #eee",
+                paddingTop: "10px",
+              }}
+            >
+              <span style={{ fontWeight: "bold", color: "#555" }}>
+                Vaccination History:{" "}
+              </span>
+              <span style={{ fontStyle: "italic", color: "#555" }}>
+                {patient.vaccination_summary || "None."}
+              </span>
             </div>
             <div style={{ paddingTop: "10px" }}>
-              <span style={{ fontWeight: "bold", color: "#555" }}>Other Notes: </span>
-              <span style={{ fontStyle: "italic", color: "#555" }}>{patient.other_notes || "No notes."}</span>
+              <span style={{ fontWeight: "bold", color: "#555" }}>
+                Other Notes:{" "}
+              </span>
+              <span
+                style={{
+                  fontStyle: "italic",
+                  color: "#555",
+                  whiteSpace: "pre-wrap",
+                }}
+              >
+                {patient.other_notes || "No notes."}
+              </span>
             </div>
           </div>
         ) : (
           <div className="info-grid">
             {/* ... EDIT FIELDS ... */}
             <div>
-              <h4 style={{ color: "#004cd8" }}>Meta, Basic & Contact</h4>
+              <h4 className="edit-title" style={{ color: "#004cd8" }}>
+                Meta, Basic & Contact
+              </h4>
               <div style={{ display: "flex", gap: "10px" }}>
                 <div style={{ flex: 1 }}>
                   <label className="edit-label">Patient ID</label>
-                  <input className="edit-input" name="display_id" value={editFormData.display_id} onChange={handleEditChange} />
+                  <input
+                    className="edit-input"
+                    name="display_id"
+                    value={editFormData.display_id}
+                    onChange={handleEditChange}
+                  />
                 </div>
                 <div style={{ flex: 1 }}>
                   <label className="edit-label">Date Registered</label>
-                  <input type="date" className="edit-input" name="date_registered" value={editFormData.date_registered} onChange={handleEditChange} />
+                  <input
+                    type="date"
+                    className="edit-input"
+                    name="date_registered"
+                    value={editFormData.date_registered}
+                    onChange={handleEditChange}
+                  />
                 </div>
               </div>
               <label className="edit-label">Name</label>
-              <input className="edit-input" name="name" value={editFormData.name} onChange={handleEditChange} />
+              <input
+                className="edit-input"
+                name="name"
+                value={editFormData.name}
+                onChange={handleEditChange}
+              />
               <label className="edit-label">DOB</label>
-              <input type="date" className="edit-input" name="date_of_birth" value={editFormData.date_of_birth} onChange={handleEditChange} />
+              <input
+                type="date"
+                className="edit-input"
+                name="date_of_birth"
+                value={editFormData.date_of_birth}
+                onChange={handleEditChange}
+              />
               <label className="edit-label">Address</label>
-              <input className="edit-input" name="address" value={editFormData.address} onChange={handleEditChange} />
+              <textarea
+                className="edit-input"
+                name="address"
+                value={editFormData.address}
+                onChange={handleEditChange}
+                rows={3}
+                style={{ width: "100%", fontFamily: "inherit" }}
+              />
               <div style={{ display: "flex", gap: "10px" }}>
                 <div style={{ flex: 1 }}>
                   <label className="edit-label">Phone 1</label>
-                  <input className="edit-input" name="phone_number_primary" value={editFormData.phone_number_primary} onChange={handleEditChange} />
+                  <input
+                    className="edit-input"
+                    name="phone_number_primary"
+                    value={editFormData.phone_number_primary}
+                    onChange={handleEditChange}
+                  />
                 </div>
                 <div style={{ flex: 1 }}>
                   <label className="edit-label">Phone 2</label>
-                  <input className="edit-input" name="phone_number_secondary" value={editFormData.phone_number_secondary || ""} onChange={handleEditChange} />
+                  <input
+                    className="edit-input"
+                    name="phone_number_secondary"
+                    value={editFormData.phone_number_secondary || ""}
+                    onChange={handleEditChange}
+                  />
                 </div>
               </div>
             </div>
 
             <div>
-              <h4 style={{ color: "#004cd8" }}>Parents</h4>
+              <h4 className="edit-title" style={{ color: "#004cd8" }}>
+                Parents
+              </h4>
               <label className="edit-label">Father Name</label>
-              <input className="edit-input" name="father_name" value={editFormData.father_name || ""} onChange={handleEditChange} />
+              <input
+                className="edit-input"
+                name="father_name"
+                value={editFormData.father_name || ""}
+                onChange={handleEditChange}
+              />
               <label className="edit-label">Father Occupation</label>
-              <input className="edit-input" name="father_occupation" value={editFormData.father_occupation || ""} onChange={handleEditChange} />
+              <input
+                className="edit-input"
+                name="father_occupation"
+                value={editFormData.father_occupation || ""}
+                onChange={handleEditChange}
+              />
               <label className="edit-label">Mother Name</label>
-              <input className="edit-input" name="mother_name" value={editFormData.mother_name || ""} onChange={handleEditChange} />
+              <input
+                className="edit-input"
+                name="mother_name"
+                value={editFormData.mother_name || ""}
+                onChange={handleEditChange}
+              />
               <label className="edit-label">Mother Occupation</label>
-              <input className="edit-input" name="mother_occupation" value={editFormData.mother_occupation || ""} onChange={handleEditChange} />
+              <input
+                className="edit-input"
+                name="mother_occupation"
+                value={editFormData.mother_occupation || ""}
+                onChange={handleEditChange}
+              />
               <label className="edit-label">Para</label>
-              <input className="edit-input" name="para" value={editFormData.para || ""} onChange={handleEditChange} />
+              <input
+                className="edit-input"
+                name="para"
+                value={editFormData.para || ""}
+                onChange={handleEditChange}
+              />
             </div>
 
             <div>
-              <h4 style={{ color: "#004cd8" }}>Birth Details</h4>
+              <h4 className="edit-title" style={{ color: "#004cd8" }}>
+                Birth Details
+              </h4>
               <label className="edit-label">Hospital</label>
-              <input className="edit-input" name="hospital" value={editFormData.hospital || ""} onChange={handleEditChange} />
+              <input
+                className="edit-input"
+                name="hospital"
+                value={editFormData.hospital || ""}
+                onChange={handleEditChange}
+              />
               <label className="edit-label">Delivery</label>
-              <select className="edit-input" name="delivery" value={editFormData.delivery || ""} onChange={handleEditChange}>
+              <select
+                className="edit-input"
+                name="delivery"
+                value={editFormData.delivery || ""}
+                onChange={handleEditChange}
+              >
                 <option value="">Select...</option>
                 {["SVD", "LSCS", "Forceps", "Vac", "Breech"].map((m) => (
-                  <option key={m} value={m}>{m}</option>
+                  <option key={m} value={m}>
+                    {m}
+                  </option>
                 ))}
               </select>
               <div style={{ display: "flex", gap: "5px" }}>
                 <div style={{ flex: 1 }}>
-                  <label className="edit-label">Wt (kg)</label>
-                  <input className="edit-input" name="birth_weight_kg" value={editFormData.birth_weight_kg || ""} onChange={handleEditChange} />
+                  <label className="edit-label">Weight (kg)</label>
+                  <input
+                    className="edit-input"
+                    name="birth_weight_kg"
+                    value={editFormData.birth_weight_kg || ""}
+                    onChange={handleEditChange}
+                  />
                 </div>
                 <div style={{ flex: 1 }}>
-                  <label className="edit-label">Len (cm)</label>
-                  <input className="edit-input" name="birth_length_cm" value={editFormData.birth_length_cm || ""} onChange={handleEditChange} />
-                </div>
-                <div style={{ flex: 1 }}>
-                  <label className="edit-label">OFC (cm)</label>
-                  <input className="edit-input" name="birth_ofc_cm" value={editFormData.birth_ofc_cm || ""} onChange={handleEditChange} />
+                  <label className="edit-label">Length (cm)</label>
+                  <input
+                    className="edit-input"
+                    name="birth_length_cm"
+                    value={editFormData.birth_length_cm || ""}
+                    onChange={handleEditChange}
+                  />
                 </div>
               </div>
+              <label className="edit-label">OFC (cm)</label>
+              <input
+                className="edit-input"
+                name="birth_ofc_cm"
+                value={editFormData.birth_ofc_cm || ""}
+                onChange={handleEditChange}
+              />
             </div>
 
             <div>
-              <h4 style={{ color: "#004cd8" }}>Medical Profile</h4>
+              <h4 className="edit-title" style={{ color: "#004cd8" }}>
+                Medical Profile
+              </h4>
               <label className="edit-label">G6PD</label>
-              <select className="edit-input" name="g6pd" value={editFormData.g6pd || ""} onChange={handleEditChange}>
+              <select
+                className="edit-input"
+                name="g6pd"
+                value={editFormData.g6pd || ""}
+                onChange={handleEditChange}
+                style={{
+                  // If deficient, make text red and bold
+                  color:
+                    editFormData.g6pd === "Deficient" ? "#d32f2f" : "inherit",
+                  fontWeight:
+                    editFormData.g6pd === "Deficient" ? "bold" : "normal",
+                  borderWidth:
+                    editFormData.g6pd === "Deficient" ? "2px" : "1px",
+                  borderColor:
+                    editFormData.g6pd === "Deficient" ? "#d32f2f" : "#ccc",
+                }}
+              >
                 <option value="">Unknown</option>
                 <option value="Normal">Normal</option>
                 <option value="Deficient">Deficient</option>
               </select>
+              <label className="edit-label">TSH (ml/Ul)</label>
+              <input
+                className="edit-input"
+                name="tsh_mlul"
+                value={editFormData.tsh_mlul || ""}
+                onChange={handleEditChange}
+              />
               <label className="edit-label">Feeding</label>
-              <input className="edit-input" name="feeding" value={editFormData.feeding || ""} onChange={handleEditChange} placeholder="Breast or Formula Name" />
-              <label className="edit-label">Languages</label>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: "10px", marginBottom: "10px" }}>
-                {["English", "Mandarin", "Malay", "Cantonese", "Hokkien"].map((lang) => (
-                  <label key={lang} style={{ fontSize: "0.8rem", display: "flex", gap: "4px" }}>
-                    <input type="checkbox" value={lang} checked={editFormData.languages?.includes(lang)} onChange={handleEditLanguageChange} />
+              <input
+                className="edit-input"
+                name="feeding"
+                value={editFormData.feeding || ""}
+                onChange={handleEditChange}
+                placeholder="Breast or Formula Name"
+              />
+              <label className="edit-label">Allergies</label>
+              <input
+                className="edit-input"
+                name="allergies"
+                value={editFormData.allergies || ""}
+                onChange={handleEditChange}
+              />
+            </div>
+
+            <div>
+              <h4 className="edit-title" style={{ color: "#004cd8" }}>
+                Others
+              </h4>
+              <label className="edit-label">Languages (Parents)</label>
+              <div
+                style={{
+                  display: "flex",
+                  flexWrap: "wrap",
+                  gap: "10px",
+                  marginBottom: "10px",
+                }}
+              >
+                {["English", "Mandarin", "Malay", "Cantonese"].map((lang) => (
+                  <label
+                    key={lang}
+                    style={{ fontSize: "0.8rem", display: "flex", gap: "4px" }}
+                  >
+                    <input
+                      type="checkbox"
+                      value={lang}
+                      checked={editFormData.languages_parents?.includes(lang)}
+                      onChange={(e) =>
+                        handleEditLanguageChange(e, "languages_parents")
+                      }
+                    />
                     {lang}
                   </label>
                 ))}
               </div>
+              <label className="edit-label">Languages (Children)</label>
+              <div
+                style={{
+                  display: "flex",
+                  flexWrap: "wrap",
+                  gap: "10px",
+                  marginBottom: "10px",
+                }}
+              >
+                {["English", "Mandarin", "Malay", "Cantonese"].map((lang) => (
+                  <label
+                    key={lang}
+                    style={{ fontSize: "0.8rem", display: "flex", gap: "4px" }}
+                  >
+                    <input
+                      type="checkbox"
+                      value={lang}
+                      checked={editFormData.languages_children?.includes(lang)}
+                      onChange={(e) =>
+                        handleEditLanguageChange(e, "languages_children")
+                      }
+                    />
+                    {lang}
+                  </label>
+                ))}
+              </div>
+              <label className="edit-label">Vaccination History</label>
+              <input
+                className="edit-input"
+                name="vaccination_summary"
+                value={editFormData.vaccination_summary || ""}
+                onChange={handleEditChange}
+              />
+
               <label className="edit-label">Notes</label>
-              <textarea className="edit-input" name="other_notes" value={editFormData.other_notes || ""} onChange={handleEditChange} rows={2} />
+              <textarea
+                className="edit-input"
+                name="other_notes"
+                value={editFormData.other_notes || ""}
+                onChange={handleEditChange}
+                rows={2}
+              />
             </div>
           </div>
         )}
@@ -255,32 +552,61 @@ export default function PatientDetailView({ patientId, onBack }) {
       <div className="card">
         <div className="visit-header">
           <h3>Medical History</h3>
-          <button className={showVisitForm ? "btn-secondary" : "btn-success"} onClick={() => setShowVisitForm(!showVisitForm)}>
+          <button
+            className={showVisitForm ? "btn-secondary" : "btn-success"}
+            onClick={() => setShowVisitForm(!showVisitForm)}
+          >
             {showVisitForm ? "Cancel Entry" : "+ Add Visit"}
           </button>
         </div>
 
         {showVisitForm && (
-          <div style={{ marginBottom: "20px", paddingBottom: "20px", borderBottom: "2px dashed #c9c9c9" }}>
-            <CreateVisitForm patientId={patient.id} onSuccess={() => { setShowVisitForm(false); fetchPatient(); }} />
+          <div
+            style={{
+              marginBottom: "20px",
+              paddingBottom: "20px",
+              borderBottom: "2px dashed #c9c9c9",
+            }}
+          >
+            <CreateVisitForm
+              patientId={patient.id}
+              onSuccess={() => {
+                setShowVisitForm(false);
+                fetchPatient();
+              }}
+            />
           </div>
         )}
 
-        {(!patient.visits || patient.visits.length === 0) ? (
-          <p style={{ color: '#999', fontStyle: 'italic' }}>No previous visits recorded.</p>
+        {!patient.visits || patient.visits.length === 0 ? (
+          <p style={{ color: "#999", fontStyle: "italic" }}>
+            No previous visits recorded.
+          </p>
         ) : (
           <ul className="visit-list">
-            {patient.visits.map(v => (
-              <VisitItem key={v.visit_id} visit={v} patientId={patient.id} onUpdate={fetchPatient} />
+            {patient.visits.map((v) => (
+              <VisitItem
+                key={v.visit_id}
+                visit={v}
+                patientId={patient.id}
+                onUpdate={fetchPatient}
+              />
             ))}
           </ul>
         )}
       </div>
 
-      <div style={{ marginTop: '30px', display: 'flex', justifyContent: 'flex-end', paddingBottom: '20px' }}>
+      <div
+        style={{
+          marginTop: "30px",
+          display: "flex",
+          justifyContent: "flex-end",
+          paddingBottom: "20px",
+        }}
+      >
         <ConfirmButton
           className="btn-danger"
-          style={{ border: 'none', padding: '12px 24px', fontSize: '0.8rem' }}
+          style={{ border: "none", padding: "12px 24px", fontSize: "0.8rem" }}
           onConfirm={handleDeletePatient}
           title={`Delete ${patient.name} (${patient.id})?`}
           message="Are you sure you want to delete this ENTIRE patient file?

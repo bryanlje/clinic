@@ -17,7 +17,8 @@ export default function CreatePatientForm({ onSuccess, onCancel }) {
     mother_name: "",
     mother_occupation: "",
     para: "",
-    languages: [],
+    languages_parents: [],
+    languages_children: [],
     hospital: "",
     delivery: "",
     birth_weight_kg: "",
@@ -41,16 +42,16 @@ export default function CreatePatientForm({ onSuccess, onCancel }) {
     }
   };
 
-  const handleLanguageChange = (e) => {
+  const handleLanguageChange = (e, fieldName) => {
     const { value, checked } = e.target;
-    const currentLanguages = formData.languages || [];
+    const currentLanguages = formData[fieldName] || [];
 
     if (checked) {
-      setFormData({ ...formData, languages: [...currentLanguages, value] });
+      setFormData({ ...formData, [fieldName]: [...currentLanguages, value] });
     } else {
       setFormData({
         ...formData,
-        languages: currentLanguages.filter((lang) => lang !== value),
+        [fieldName]: currentLanguages.filter((lang) => lang !== value),
       });
     }
   };
@@ -216,11 +217,13 @@ export default function CreatePatientForm({ onSuccess, onCancel }) {
           </div>
           <div style={{ marginTop: "15px" }}>
             <label>Address</label>
-            <input
+            <textarea
               name="address"
               onChange={handleChange}
               value={formData.address}
               required
+              rows={2}
+              style={{ width: "100%", padding: "8px" }}
             />
           </div>
         </div>
@@ -475,11 +478,11 @@ export default function CreatePatientForm({ onSuccess, onCancel }) {
         <div className="card">
           <h3>Others</h3>
           <div>
-            <label style={{ display: "block", marginBottom: "10px" }}>
-              Languages
+            <label style={{ display: "block", marginTop: "10px" }}>
+              Languages (Parents)
             </label>
             <div style={{ display: "flex", flexWrap: "wrap", gap: "25px" }}>
-              {["English", "Mandarin", "Malay", "Cantonese", "Hokkien"].map(
+              {["English", "Mandarin", "Malay", "Cantonese"].map(
                 (lang) => (
                   <label
                     key={lang}
@@ -493,8 +496,37 @@ export default function CreatePatientForm({ onSuccess, onCancel }) {
                     <input
                       type="checkbox"
                       value={lang}
-                      checked={formData.languages?.includes(lang)}
-                      onChange={handleLanguageChange}
+                      checked={formData.languages_parents?.includes(lang)}
+                      onChange={(e) => handleLanguageChange(e, "languages_parents")}
+                    />
+                    {lang}
+                  </label>
+                ),
+              )}
+            </div>
+          </div>
+
+          <div>
+            <label style={{ display: "block", marginTop: "15px" }}>
+              Languages (Children)
+            </label>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "25px" }}>
+              {["English", "Mandarin", "Malay", "Cantonese"].map(
+                (lang) => (
+                  <label
+                    key={lang}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "6px",
+                      cursor: "pointer",
+                    }}
+                  >
+                    <input
+                      type="checkbox"
+                      value={lang}
+                      checked={formData.languages_children?.includes(lang)}
+                      onChange={(e) => handleLanguageChange(e, "languages_children")}
                     />
                     {lang}
                   </label>
@@ -523,11 +555,13 @@ export default function CreatePatientForm({ onSuccess, onCancel }) {
           </div>
           <div style={{ marginTop: "15px" }}>
             <label>Other Notes</label>
-            <input
+            <textarea
               name="other_notes"
               onChange={handleChange}
               value={formData.other_notes}
               placeholder="Optional"
+              rows={2}
+              style={{ width: "100%", padding: "8px" }}
             />
           </div>
 

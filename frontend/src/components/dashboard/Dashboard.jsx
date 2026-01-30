@@ -2,6 +2,8 @@ import { useState } from "react";
 import axios from "axios";
 import { API_URL } from "../../api/config";
 
+import ExportMedicationModal from "../menu/ExportMedicationModal";
+
 export default function Dashboard({ onNavigateCreate, onSelectPatient }) {
   const [isAdvanced, setIsAdvanced] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -19,6 +21,10 @@ export default function Dashboard({ onNavigateCreate, onSelectPatient }) {
     dob_start: "",
     dob_end: "",
   });
+  const [showMenu, setShowMenu] = useState(false);
+  const [showExportModal, setShowExportModal] = useState(false);
+
+  const toggleMenu = () => setShowMenu(!showMenu);
 
   const SEARCH_LIMIT = 25;
 
@@ -92,6 +98,7 @@ export default function Dashboard({ onNavigateCreate, onSelectPatient }) {
 
   return (
     <div>
+      {showExportModal && <ExportMedicationModal onClose={() => setShowExportModal(false)} />}
       <div className="card">
         <div
           style={{
@@ -102,19 +109,46 @@ export default function Dashboard({ onNavigateCreate, onSelectPatient }) {
           }}
         >
           <h2>Find Patient</h2>
-          <button
-            className="btn-secondary"
-            style={{ padding: "10px 30px" }}
-            onClick={() => {
-              setIsAdvanced(!isAdvanced);
-              setResults([]);
-              setHasSearched(false);
-            }}
-          >
-            {isAdvanced
-              ? "Switch to Basic Search"
-              : "Switch to Advanced Search"}
-          </button>
+          
+          {/* Grouped Right Actions */}
+          <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+            <button
+              className="btn-secondary"
+              style={{ padding: "10px 20px" }}
+              onClick={() => {
+                setIsAdvanced(!isAdvanced);
+                setResults([]);
+                setHasSearched(false);
+              }}
+            >
+              {isAdvanced ? "Basic Search" : "Advanced Search"}
+            </button>
+
+            <div style={{ position: 'relative' }}>
+              <button 
+                className="btn-secondary" 
+                onClick={toggleMenu}
+                style={{ padding: "10px 15px", fontWeight: 'bold' }}
+              >
+                ☰ Menu
+              </button>
+              
+              {showMenu && (
+                <div className="dropdown-menu">
+                  <button 
+                    className="menu-item"
+                    onClick={() => {
+                      setShowExportModal(true);
+                      setShowMenu(false);
+                    }}
+                  >
+                    📋 Export Medication Log
+                  </button>
+                  {/* Add more <button className="menu-item"> here later */}
+                </div>
+              )}
+            </div>
+          </div>
         </div>
 
         {!isAdvanced && (
