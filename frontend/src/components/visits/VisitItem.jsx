@@ -12,6 +12,7 @@ export default function VisitItem({ visit, patientId, onUpdate }) {
     medicine_name: "",
     instructions: "",
     quantity: "",
+    notes: ""
   });
 
   useEffect(() => {
@@ -40,6 +41,7 @@ export default function VisitItem({ visit, patientId, onUpdate }) {
           medicine_name: d.medicine_name,
           instructions: d.instructions,
           quantity: d.quantity,
+          notes: d.notes,
           is_dispensed: true,
         })),
       };
@@ -105,7 +107,7 @@ export default function VisitItem({ visit, patientId, onUpdate }) {
       ...editData,
       dispensations: [...(editData.dispensations || []), newMed],
     });
-    setMedInput({ medicine_name: "", instructions: "", quantity: "" });
+    setMedInput({ medicine_name: "", instructions: "", quantity: "", notes: "" });
   };
 
   const removeMedicine = (index) => {
@@ -195,7 +197,7 @@ export default function VisitItem({ visit, patientId, onUpdate }) {
                   <ul className="medicine-display-list">
                     {visit.dispensations.map((med, i) => (
                       <li key={i}>
-                        {med.medicine_name} {med.instructions} ({med.quantity})
+                        {med.medicine_name} {med.instructions} ({med.quantity}) - {med.notes}
                       </li>
                     ))}
                   </ul>
@@ -273,10 +275,14 @@ export default function VisitItem({ visit, patientId, onUpdate }) {
                     onChange={(e) =>
                       setEditData({ ...editData, total_charge: e.target.value })
                     }
-                    onBlur={() => setEditData({
-                      ...editData, 
-                      total_charge: parseFloat(editData.total_charge || 0).toFixed(2)
-                    })}
+                    onBlur={(e) => {
+                      const rawValue = parseFloat(e.target.value);
+                      if (!isNaN(rawValue)) {
+                        // Rounding to exactly 2 decimal places fixes the .99 issue
+                        const fixedValue = (Math.round(rawValue * 100) / 100).toFixed(2);
+                        setEditData({ ...editData, total_charge: fixedValue });
+                      }
+                    }}
                   />
                 </div>
               </div>
@@ -356,7 +362,7 @@ export default function VisitItem({ visit, patientId, onUpdate }) {
                   {(editData.dispensations || []).map((med, idx) => (
                     <li key={idx} className="medicine-edit-item">
                       <span>
-                        {med.medicine_name} {med.instructions} ({med.quantity})
+                        {med.medicine_name} {med.instructions} ({med.quantity}) - {med.notes}
                       </span>
                       <button
                         type="button"
@@ -395,6 +401,14 @@ export default function VisitItem({ visit, patientId, onUpdate }) {
                     value={medInput.quantity}
                     onChange={(e) =>
                       setMedInput({ ...medInput, quantity: e.target.value })
+                    }
+                  />
+                  <input
+                    style={{ flex: 1 }}
+                    placeholder="Notes"
+                    value={medInput.notes}
+                    onChange={(e) =>
+                      setMedInput({ ...medInput, notes: e.target.value })
                     }
                   />
                   <button

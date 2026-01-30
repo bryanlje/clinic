@@ -95,6 +95,15 @@ export default function PatientDetailView({ patientId, onBack }) {
       </div>
     );
 
+  const sortedVisits = [...(patient.visits || [])].sort((a, b) => {
+    // 1. Compare Date (Newest first)
+    if (b.date !== a.date) {
+      return b.date.localeCompare(a.date);
+    }
+    // 2. If dates are equal, Compare Time (Newest first)
+    return b.time.localeCompare(a.time);
+  });
+
   return (
     <div>
       <div className="patient-header">
@@ -578,13 +587,13 @@ export default function PatientDetailView({ patientId, onBack }) {
           </div>
         )}
 
-        {!patient.visits || patient.visits.length === 0 ? (
+        {!sortedVisits || sortedVisits.length === 0 ? (
           <p style={{ color: "#999", fontStyle: "italic" }}>
             No previous visits recorded.
           </p>
         ) : (
           <ul className="visit-list">
-            {patient.visits.map((v) => (
+            {sortedVisits.map((v) => (
               <VisitItem
                 key={v.visit_id}
                 visit={v}

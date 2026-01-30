@@ -21,7 +21,7 @@ export default function CreateVisitForm({ patientId, onSuccess }) {
 
   // Dispensation State
   const [dispensations, setDispensations] = useState([]);
-  const [medInput, setMedInput] = useState({ name: "", instructions: "", quantity: "" });
+  const [medInput, setMedInput] = useState({ name: "", instructions: "", quantity: "", notes: "" });
 
   const addMedicine = () => {
     if (!medInput.name || !medInput.quantity) {
@@ -29,7 +29,7 @@ export default function CreateVisitForm({ patientId, onSuccess }) {
       return;
     }
     setDispensations([...dispensations, { ...medInput, is_dispensed: true }]);
-    setMedInput({ name: "", instructions: "", quantity: "" }); // Reset inputs
+    setMedInput({ name: "", instructions: "", quantity: "", notes: "" }); // Reset inputs
   };
 
   const removeMedicine = (index) => {
@@ -50,6 +50,7 @@ export default function CreateVisitForm({ patientId, onSuccess }) {
             medicine_name: d.name,
             instructions: d.instructions,
             quantity: d.quantity,
+            notes: d.notes,
             is_dispensed: true
         }))
       };
@@ -156,9 +157,10 @@ export default function CreateVisitForm({ patientId, onSuccess }) {
           <table className="medicine-table">
             <thead>
               <tr>
-                <th style={{ width: '45%' }}>Item</th>
-                <th style={{ width: '25%' }}>Instruction</th>
+                <th style={{ width: '35%' }}>Item</th>
+                <th style={{ width: '20%' }}>Instruction</th>
                 <th style={{ width: '20%' }}>Quantity</th>
+                <th style={{ width: '20%' }}>Notes</th>
                 {/* <th style={{ width: '20%' }}></th> */}
                 <th></th>
               </tr>
@@ -169,6 +171,7 @@ export default function CreateVisitForm({ patientId, onSuccess }) {
                   <td>{med.name}</td>
                   <td>{med.instructions}</td>
                   <td>{med.quantity}</td>
+                  <td>{med.notes}</td>
                   <td style={{textAlign: 'center'}}>
                     <button type="button" onClick={() => removeMedicine(idx)} className="btn-icon-danger">✕</button>
                   </td>
@@ -196,6 +199,12 @@ export default function CreateVisitForm({ patientId, onSuccess }) {
             placeholder="Quantity" 
             value={medInput.quantity} 
             onChange={e => setMedInput({...medInput, quantity: e.target.value})}
+          />
+          <input 
+            style={{flex: 1}}
+            placeholder="Notes" 
+            value={medInput.notes} 
+            onChange={e => setMedInput({...medInput, notes: e.target.value})}
           />
           <button type="button" onClick={addMedicine} className="btn-secondary btn-add">✔</button>
         </div>

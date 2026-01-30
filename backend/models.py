@@ -74,7 +74,9 @@ class DispensationItem(Base):
     # Example: "tds PRM" (To be taken three times a day, as needed)
     instructions = Column(String, nullable=True)    
     # Example: "60ml" or "x1"
-    quantity = Column(String, nullable=False)    
+    quantity = Column(String, nullable=False)
+    # Optional: Extra notes for dispensation
+    notes = Column(String, nullable=True)    
     # Optional: Track if this item was actually dispensed or just prescribed
     is_dispensed = Column(Boolean, default=True) 
 

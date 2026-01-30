@@ -8,6 +8,7 @@ class DispensationItemBase(BaseModel):
     medicine_name: str
     instructions: Optional[str] = None
     quantity: str
+    notes: Optional[str] = None
     is_dispensed: bool = True
 
 class DispensationItemCreate(DispensationItemBase):

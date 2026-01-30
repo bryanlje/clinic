@@ -202,6 +202,7 @@ def create_visit(visit: schemas.VisitCreate, db: Session = Depends(database.get_
             medicine_name=item['medicine_name'],
             instructions=item.get('instructions'),
             quantity=item['quantity'],
+            notes=item['notes'],
             is_dispensed=item.get('is_dispensed', True)
         )
         db.add(db_dispensation)
@@ -237,6 +238,7 @@ def update_visit(visit_id: int, visit_update: schemas.VisitUpdate, db: Session =
                 medicine_name=item.medicine_name,
                 instructions=item.instructions,
                 quantity=item.quantity,
+                notes=item.notes,
                 is_dispensed=item.is_dispensed
             )
             db.add(new_item)
@@ -415,7 +417,7 @@ def export_dispensations_pdf(
         med_list = []
         for d in visit.dispensations:
             # e.g., "• Paracetamol (tds) - 20"
-            med_text = f"• {d.medicine_name} ({d.instructions or '-'}) [{d.quantity}]"
+            med_text = f"• {d.medicine_name} {d.instructions or '-'} ({d.quantity})"
             med_list.append(med_text)
         
         # Join with <br/> because we are using the Paragraph object which understands HTML-like tags
