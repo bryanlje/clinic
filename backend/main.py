@@ -1,12 +1,18 @@
-import os
+import os, csv, io
 from fastapi import FastAPI, Depends, HTTPException, Query, File, UploadFile
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, StreamingResponse
 from sqlalchemy import or_, func, cast, Integer
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from datetime import date
 from fastapi.middleware.cors import CORSMiddleware
+
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import A4, landscape
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib.units import inch
 
 import models, schemas, database, storage
 
@@ -306,6 +312,157 @@ async def delete_visit_attachment(
     db.commit()
     
     return {"status": "deleted"}
+
+@app.get("/api/reports/dispensations/export-csv")
+def export_dispensations_csv(
+    start_date: date,
+    end_date: date,
+    db: Session = Depends(database.get_db)
+):
+    # 1. Query: Join Visits -> Patients -> Dispensations
+    # We filter by visit date and ensure there are dispensations
+    query = (
+        db.query(models.Visit)
+        .join(models.Patient)
+        .join(models.DispensationItem)
+        .filter(models.Visit.date >= start_date)
+        .filter(models.Visit.date <= end_date)
+        .order_by(models.Visit.date, models.Visit.time)
+    )
+    
+    visits = query.all()
+
+    # 2. Prepare CSV in memory
+    output = io.StringIO()
+    writer = csv.writer(output)
+    
+    # Header Row
+    writer.writerow([
+        "Date", 
+        "Time", 
+        "Patient Name", 
+        "Patient Address", 
+        "Medicine", 
+        "Instructions", 
+        "Quantity"
+    ])
+
+    # 3. Write Data Rows
+    count = 0
+    for visit in visits:
+        for disp in visit.dispensations:
+            writer.writerow([
+                visit.date,
+                visit.time,
+                visit.patient.name,
+                visit.patient.address,
+                disp.medicine_name,
+                disp.instructions or "",
+                disp.quantity
+            ])
+            count += 1
+            
+    # 4. Return as a file download
+    output.seek(0)
+    filename = f"medication_log_{start_date}_to_{end_date}.csv"
+    
+    return StreamingResponse(
+        iter([output.getvalue()]),
+        media_type="text/csv",
+        headers={"Content-Disposition": f"attachment; filename={filename}"}
+    )
+
+@app.get("/api/reports/dispensations/export-pdf")
+def export_dispensations_pdf(
+    start_date: date,
+    end_date: date,
+    db: Session = Depends(database.get_db)
+):
+    # 1. Query Data
+    visits = (
+        db.query(models.Visit)
+        .join(models.Patient)
+        .join(models.DispensationItem)
+        .filter(models.Visit.date >= start_date)
+        .filter(models.Visit.date <= end_date)
+        .order_by(models.Visit.date, models.Visit.time)
+        .all()
+    )
+
+    # 2. Setup PDF Buffer
+    output = io.BytesIO()
+    doc = SimpleDocTemplate(
+        output, 
+        pagesize=landscape(A4), # Landscape gives more width for tables
+        rightMargin=30, leftMargin=30, topMargin=30, bottomMargin=30
+    )
+    
+    # 3. Prepare Content
+    elements = []
+    styles = getSampleStyleSheet()
+    
+    # Title
+    title = Paragraph(f"Medication Dispensation Log: {start_date} to {end_date}", styles['Title'])
+    elements.append(title)
+    elements.append(Spacer(1, 20)) # Space between title and table
+
+    # Table Header
+    data = [['Date', 'Patient Name', 'Address', 'Medications']]
+    
+    # Table Body
+    for visit in visits:
+        # Format Medications: Combine all meds for this visit into one cell, separated by newlines
+        med_list = []
+        for d in visit.dispensations:
+            # e.g., "• Paracetamol (tds) - 20"
+            med_text = f"• {d.medicine_name} ({d.instructions or '-'}) [{d.quantity}]"
+            med_list.append(med_text)
+        
+        # Join with <br/> because we are using the Paragraph object which understands HTML-like tags
+        meds_string = "<br/>".join(med_list)
+
+        # We use Paragraph() for Address and Meds to enable text wrapping
+        row = [
+            str(visit.date),
+            Paragraph(visit.patient.name, styles['BodyText']),
+            Paragraph(visit.patient.address, styles['BodyText']),
+            Paragraph(meds_string, styles['BodyText'])
+        ]
+        data.append(row)
+
+    # 4. Configure Table Layout
+    # Column widths: Date(10%), Name(15%), Address(35%), Meds(40%)
+    # Landscape A4 width is approx 11.7 inches. Let's use ~10.5 inches total.
+    col_widths = [1.0*inch, 1.8*inch, 3.7*inch, 4.0*inch]
+    
+    table = Table(data, colWidths=col_widths)
+    
+    # 5. Styling the Table (Grid, Colors, Fonts)
+    table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.grey),       # Header background
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),  # Header text color
+        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),                # Alignment
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),    # Header font
+        ('VALIGN', (0, 0), (-1, -1), 'TOP'),                # Align text to top of cell
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.black),      # Grid lines
+        ('LEFTPADDING', (0, 0), (-1, -1), 6),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 6),
+        ('TOPPADDING', (0, 0), (-1, -1), 6),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+    ]))
+
+    elements.append(table)
+
+    # 6. Build PDF
+    doc.build(elements)
+    output.seek(0)
+    
+    filename = f"medication_log_{start_date}_to_{end_date}.pdf"
+    return StreamingResponse(
+        output,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f"attachment; filename={filename}"}
+    )
 
 # --- SERVE REACT FRONTEND (Production Mode) ---
 # This checks if the 'dist' folder exists (created by 'npm run build')
