@@ -373,7 +373,7 @@ export default function VisitItem({ visit, patientId, patientDOB, onUpdate }) {
                     {visit.dispensations.map((med, i) => (
                       <li key={i}>
                         {med.medicine_name} {med.instructions} ({med.quantity})
-                        - {med.notes}
+                        {med.notes ? ` - ${med.notes}` : ""}
                       </li>
                     ))}
                   </ul>
@@ -424,6 +424,7 @@ export default function VisitItem({ visit, patientId, patientDOB, onUpdate }) {
                   onConfirm={handleDelete}
                   title="Delete Record?"
                   message="Are you sure you want to delete this visit? This cannot be undone."
+                  requiresPin={true}
                 >
                   Delete Record
                 </ConfirmButton>
@@ -576,7 +577,7 @@ export default function VisitItem({ visit, patientId, patientDOB, onUpdate }) {
                     >
                       <span>
                         {med.medicine_name} {med.instructions} ({med.quantity})
-                        - {med.notes}
+                        {med.notes ? ` - ${med.notes}` : ""}
                       </span>
                       <div style={{ display: "flex", gap: "5px" }}>
                         <button

@@ -3,6 +3,7 @@ import axios from "axios";
 import { API_URL } from "../../api/config";
 
 import ExportMedicationModal from "../menu/ExportMedicationModal";
+import ChangePinModal from "../menu/ChangePinModal";
 
 export default function Dashboard({ onNavigateCreate, onSelectPatient }) {
   const [isAdvanced, setIsAdvanced] = useState(false);
@@ -23,6 +24,7 @@ export default function Dashboard({ onNavigateCreate, onSelectPatient }) {
   });
   const [showMenu, setShowMenu] = useState(false);
   const [showExportModal, setShowExportModal] = useState(false);
+  const [showPinModal, setShowPinModal] = useState(false);
 
   const toggleMenu = () => setShowMenu(!showMenu);
 
@@ -98,7 +100,12 @@ export default function Dashboard({ onNavigateCreate, onSelectPatient }) {
 
   return (
     <div>
-      {showExportModal && <ExportMedicationModal onClose={() => setShowExportModal(false)} />}
+      {showExportModal && (
+        <ExportMedicationModal onClose={() => setShowExportModal(false)} />
+      )}
+      {showPinModal && (
+        <ChangePinModal isOpen={true} onClose={() => setShowPinModal(false)} />
+      )}
       <div className="card">
         <div
           style={{
@@ -109,7 +116,7 @@ export default function Dashboard({ onNavigateCreate, onSelectPatient }) {
           }}
         >
           <h2>Find Patient</h2>
-          
+
           {/* Grouped Right Actions */}
           <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
             <button
@@ -124,18 +131,18 @@ export default function Dashboard({ onNavigateCreate, onSelectPatient }) {
               {isAdvanced ? "Basic Search" : "Advanced Search"}
             </button>
 
-            <div style={{ position: 'relative' }}>
-              <button 
-                className="btn-secondary" 
+            <div style={{ position: "relative" }}>
+              <button
+                className="btn-secondary"
                 onClick={toggleMenu}
-                style={{ padding: "10px 15px", fontWeight: 'bold' }}
+                style={{ padding: "10px 15px", fontWeight: "bold" }}
               >
                 ☰ Menu
               </button>
-              
+
               {showMenu && (
                 <div className="dropdown-menu">
-                  <button 
+                  <button
                     className="menu-item"
                     onClick={() => {
                       setShowExportModal(true);
@@ -143,6 +150,17 @@ export default function Dashboard({ onNavigateCreate, onSelectPatient }) {
                     }}
                   >
                     📋 Export Medication Log
+                  </button>
+
+                  <button
+                    className="menu-item"
+                    onClick={() => {
+                      setShowPinModal(true);
+                      setShowMenu(false);
+                    }}
+                    style={{ marginTop: "auto" }} // Pushes it to bottom of sidebar often
+                  >
+                    🔒 Change Admin PIN
                   </button>
                   {/* Add more <button className="menu-item"> here later */}
                 </div>
@@ -236,7 +254,12 @@ export default function Dashboard({ onNavigateCreate, onSelectPatient }) {
                     />
                   </div>
                   <div style={{ flex: 1 }}>
-                    <label className="label-small">To</label>
+                    <label
+                      className="label-small"
+                      style={{ paddingTop: "5px" }}
+                    >
+                      To
+                    </label>
                     <input
                       type="date"
                       value={advParams.dob_end}
@@ -277,7 +300,12 @@ export default function Dashboard({ onNavigateCreate, onSelectPatient }) {
                     />
                   </div>
                   <div style={{ flex: 1 }}>
-                    <label className="label-small">To</label>
+                    <label
+                      className="label-small"
+                      style={{ paddingTop: "5px" }}
+                    >
+                      To
+                    </label>
                     <input
                       type="date"
                       value={advParams.visit_end}
@@ -321,7 +349,12 @@ export default function Dashboard({ onNavigateCreate, onSelectPatient }) {
                     />
                   </div>
                   <div style={{ flex: 1 }}>
-                    <label className="label-small">To</label>
+                    <label
+                      className="label-small"
+                      style={{ paddingTop: "5px" }}
+                    >
+                      To
+                    </label>
                     <input
                       type="date"
                       value={advParams.date_registered_end}

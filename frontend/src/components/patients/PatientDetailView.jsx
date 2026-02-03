@@ -247,7 +247,7 @@ export default function PatientDetailView({ patientId, onBack }) {
               <span style={{ fontWeight: "bold", color: "#555" }}>
                 Vaccination History:{" "}
               </span>
-              <span style={{ fontStyle: "italic", color: "#555" }}>
+              <span style={{ fontStyle: "italic", color: "#555", whiteSpace: "pre-wrap" }}>
                 {patient.vaccination_summary || "None."}
               </span>
             </div>
@@ -317,7 +317,7 @@ export default function PatientDetailView({ patientId, onBack }) {
                 onChange={handleEditChange}
                 rows={3}
                 style={{
-                  resize: "vertical"
+                  resize: "vertical",
                 }}
               />
               <div style={{ display: "flex", gap: "10px" }}>
@@ -544,11 +544,15 @@ export default function PatientDetailView({ patientId, onBack }) {
                 ))}
               </div>
               <label className="edit-label">Vaccination History</label>
-              <input
+              <textarea
                 className="edit-input"
                 name="vaccination_summary"
                 value={editFormData.vaccination_summary || ""}
                 onChange={handleEditChange}
+                rows={1}
+                style={{
+                  resize: "vertical",
+                }}
               />
 
               <label className="edit-label">Notes</label>
@@ -557,9 +561,9 @@ export default function PatientDetailView({ patientId, onBack }) {
                 name="other_notes"
                 value={editFormData.other_notes || ""}
                 onChange={handleEditChange}
-                rows={2}
+                rows={3}
                 style={{
-                  resize: "vertical"
+                  resize: "vertical",
                 }}
               />
             </div>
@@ -628,9 +632,10 @@ export default function PatientDetailView({ patientId, onBack }) {
           className="btn-danger"
           style={{ border: "none", padding: "12px 24px", fontSize: "0.8rem" }}
           onConfirm={handleDeletePatient}
-          title={`Delete ${patient.name} (${patient.id})?`}
+          title={`Delete ${patient.name} (${patient.display_id})?`}
           message="Are you sure you want to delete this ENTIRE patient file?
           All personal details, visit history, and associated attachments will be permanently lost."
+          requiresPin={true}
         >
           Delete Patient File
         </ConfirmButton>

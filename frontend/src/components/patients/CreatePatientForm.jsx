@@ -482,27 +482,27 @@ export default function CreatePatientForm({ onSuccess, onCancel }) {
               Languages (Parents)
             </label>
             <div style={{ display: "flex", flexWrap: "wrap", gap: "25px" }}>
-              {["English", "Mandarin", "Malay", "Cantonese"].map(
-                (lang) => (
-                  <label
-                    key={lang}
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "6px",
-                      cursor: "pointer",
-                    }}
-                  >
-                    <input
-                      type="checkbox"
-                      value={lang}
-                      checked={formData.languages_parents?.includes(lang)}
-                      onChange={(e) => handleLanguageChange(e, "languages_parents")}
-                    />
-                    {lang}
-                  </label>
-                ),
-              )}
+              {["English", "Mandarin", "Malay", "Cantonese"].map((lang) => (
+                <label
+                  key={lang}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "6px",
+                    cursor: "pointer",
+                  }}
+                >
+                  <input
+                    type="checkbox"
+                    value={lang}
+                    checked={formData.languages_parents?.includes(lang)}
+                    onChange={(e) =>
+                      handleLanguageChange(e, "languages_parents")
+                    }
+                  />
+                  {lang}
+                </label>
+              ))}
             </div>
           </div>
 
@@ -511,27 +511,27 @@ export default function CreatePatientForm({ onSuccess, onCancel }) {
               Languages (Children)
             </label>
             <div style={{ display: "flex", flexWrap: "wrap", gap: "25px" }}>
-              {["English", "Mandarin", "Malay", "Cantonese"].map(
-                (lang) => (
-                  <label
-                    key={lang}
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "6px",
-                      cursor: "pointer",
-                    }}
-                  >
-                    <input
-                      type="checkbox"
-                      value={lang}
-                      checked={formData.languages_children?.includes(lang)}
-                      onChange={(e) => handleLanguageChange(e, "languages_children")}
-                    />
-                    {lang}
-                  </label>
-                ),
-              )}
+              {["English", "Mandarin", "Malay", "Cantonese"].map((lang) => (
+                <label
+                  key={lang}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "6px",
+                    cursor: "pointer",
+                  }}
+                >
+                  <input
+                    type="checkbox"
+                    value={lang}
+                    checked={formData.languages_children?.includes(lang)}
+                    onChange={(e) =>
+                      handleLanguageChange(e, "languages_children")
+                    }
+                  />
+                  {lang}
+                </label>
+              ))}
             </div>
           </div>
 

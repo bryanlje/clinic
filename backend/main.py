@@ -1,4 +1,4 @@
-import os, csv, io
+import os, csv, io, hashlib
 from fastapi import FastAPI, Depends, HTTPException, Query, File, UploadFile
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, StreamingResponse
@@ -30,6 +30,27 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# --- Helper Functions ---
+def get_password_hash(password: str) -> str:
+    # 1. Generate a random salt
+    salt = os.urandom(16).hex()
+    # 2. Hash the salt + password
+    hash_obj = hashlib.sha256((salt + password).encode())
+    # 3. Return format: "salt$hash"
+    return f"{salt}${hash_obj.hexdigest()}"
+
+def verify_password(plain_password: str, stored_value: str) -> bool:
+    try:
+        # 1. Split the stored value into salt and hash
+        salt, hash_val = stored_value.split('$')
+        # 2. Hash the input using the SAME salt
+        verify_obj = hashlib.sha256((salt + plain_password).encode())
+        # 3. Compare
+        return verify_obj.hexdigest() == hash_val
+    except ValueError:
+        # Handles cases where stored_value format is wrong
+        return False
 
 # --- API ROUTES ---
 
@@ -476,6 +497,51 @@ def export_dispensations_pdf(
         media_type="application/pdf",
         headers={"Content-Disposition": f"attachment; filename={filename}"}
     )
+
+# --- Startup Event: Set Default PIN ---
+@app.on_event("startup")
+def initialize_settings():
+    db = database.SessionLocal()
+    try:
+        # Check if PIN exists
+        pin_config = db.query(models.SystemConfig).filter(models.SystemConfig.key == "admin_pin").first()
+        
+        if not pin_config:
+            # Get default from Docker Env or use "000000"
+            default_pin = os.getenv("INITIAL_ADMIN_PIN", "000000")
+            hashed_pin = get_password_hash(default_pin)
+            
+            new_config = models.SystemConfig(key="admin_pin", value=hashed_pin)
+            db.add(new_config)
+            db.commit()
+            print(f"--- SYSTEM: Admin PIN initialized to default ({default_pin}) ---")
+    finally:
+        db.close()
+
+@app.post("/api/admin/verify-pin")
+def verify_admin_pin(payload: schemas.PinVerify, db: Session = Depends(database.get_db)):
+    pin_config = db.query(models.SystemConfig).filter(models.SystemConfig.key == "admin_pin").first()
+    if not pin_config:
+        raise HTTPException(status_code=500, detail="PIN not configured")
+    
+    if not verify_password(payload.pin, pin_config.value):
+        raise HTTPException(status_code=401, detail="Incorrect PIN")
+    
+    return {"status": "valid"}
+
+@app.put("/api/admin/change-pin")
+def change_admin_pin(payload: schemas.PinUpdate, db: Session = Depends(database.get_db)):
+    pin_config = db.query(models.SystemConfig).filter(models.SystemConfig.key == "admin_pin").first()
+    
+    # 1. Verify Old PIN
+    if not pin_config or not verify_password(payload.current_pin, pin_config.value):
+        raise HTTPException(status_code=401, detail="Current PIN is incorrect")
+    
+    # 2. Set New PIN
+    pin_config.value = get_password_hash(payload.new_pin)
+    db.commit()
+    return {"status": "updated"}
+
 
 # --- SERVE REACT FRONTEND (Production Mode) ---
 # This checks if the 'dist' folder exists (created by 'npm run build')

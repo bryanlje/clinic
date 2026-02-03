@@ -99,3 +99,10 @@ class Patient(PatientBase):
     visits: List[Visit] = []
     class Config:
         from_attributes = True
+
+class PinVerify(BaseModel):
+    pin: str
+
+class PinUpdate(BaseModel):
+    current_pin: str
+    new_pin: str

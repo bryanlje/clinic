@@ -182,6 +182,11 @@ button {
   z-index: 100;
 }
 
+.fab:hover {
+  background: var(--success-color-dark);
+  transform: scale(1.05);
+}
+
 /* --- LISTS & DETAILS --- */
 .list {
   list-style: none;

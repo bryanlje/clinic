@@ -93,3 +93,9 @@ class DispensationItem(Base):
     is_dispensed = Column(Boolean, default=True) 
 
     visit = relationship("Visit", back_populates="dispensations")
+
+class SystemConfig(Base):
+    __tablename__ = "system_configs"
+    
+    key = Column(String, primary_key=True, index=True)
+    value = Column(String, nullable=False) # Will store the hashed PIN
