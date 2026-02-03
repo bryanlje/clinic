@@ -18,6 +18,13 @@ config = context.config
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
+# -------------------------------------------------------------
+# Override URL globally here
+# This ensures both Offline and Online modes use the Docker URL
+# -------------------------------------------------------------
+if os.getenv("DATABASE_URL"):
+    config.set_main_option("sqlalchemy.url", os.getenv("DATABASE_URL"))
+
 # add your model's MetaData object here
 # for 'autogenerate' support
 # from myapp import mymodel
@@ -61,14 +68,8 @@ def run_migrations_online() -> None:
     and associate a connection with the context.
 
     """
-    # 1. GET THE URL FROM ENV VAR (If it exists)
-    # This allows Alembic to see the Cloud SQL URL passed to Docker
-    configuration = config.get_section(config.config_ini_section)
-    if os.getenv("DATABASE_URL"):
-        configuration["sqlalchemy.url"] = os.getenv("DATABASE_URL")
-
     connectable = engine_from_config(
-        configuration, # <--- Pass the modified config here
+        config.get_section(config.config_ini_section),
         prefix="sqlalchemy.",
         poolclass=pool.NullPool,
     )

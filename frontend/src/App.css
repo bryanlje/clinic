@@ -547,6 +547,20 @@ button {
   transform: scale(1.2);
 }
 
+.btn-icon-edit {
+  color: var(--text-light);
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 1.1rem;
+  padding: 0 5px;
+  transition: transform 0.2s;
+}
+
+.btn-icon-edit:hover {
+  transform: scale(1.2);
+}
+
 .btn-add {
   background: var(--success-color);
   color: white;

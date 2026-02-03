@@ -223,7 +223,7 @@ export default function CreatePatientForm({ onSuccess, onCancel }) {
               value={formData.address}
               required
               rows={2}
-              style={{ width: "100%", padding: "8px" }}
+              style={{ width: "100%", padding: "8px", resize: "vertical" }}
             />
           </div>
         </div>
@@ -537,20 +537,24 @@ export default function CreatePatientForm({ onSuccess, onCancel }) {
 
           <div style={{ marginTop: "15px" }}>
             <label>Allergies</label>
-            <input
+            <textarea
               name="allergies"
               onChange={handleChange}
               value={formData.allergies}
               placeholder="Optional"
+              rows={1}
+              style={{ resize: "vertical" }}
             />
           </div>
           <div style={{ marginTop: "15px" }}>
             <label>Vaccination Summary</label>
-            <input
+            <textarea
               name="vaccination_summary"
               onChange={handleChange}
               value={formData.vaccination_summary}
               placeholder="Optional"
+              rows={1}
+              style={{ resize: "vertical" }}
             />
           </div>
           <div style={{ marginTop: "15px" }}>
@@ -561,7 +565,7 @@ export default function CreatePatientForm({ onSuccess, onCancel }) {
               value={formData.other_notes}
               placeholder="Optional"
               rows={2}
-              style={{ width: "100%", padding: "8px" }}
+              style={{ resize: "vertical" }}
             />
           </div>
 

@@ -38,6 +38,13 @@ EXPOSE 8000
 
 WORKDIR /app/backend
 
-# Run Command: Gunicorn running FastAPI
+# Copy entrypoint script and make it executable
+COPY backend/entrypoint.sh /app/backend/entrypoint.sh
+RUN chmod +x /app/backend/entrypoint.sh
+
+# Set the ENTRYPOINT
+ENTRYPOINT ["/app/backend/entrypoint.sh"]
+
+# Run Command: Gunicorn running FastAPI (passed as "$@" to the entrypoint)
 # "backend.main:app" means look in backend folder, main.py file, app object
 CMD ["gunicorn", "-w", "4", "-k", "uvicorn.workers.UvicornWorker", "-b", "0.0.0.0:8000", "backend.main:app"]

@@ -206,13 +206,17 @@ export default function PatientDetailView({ patientId, onBack }) {
                 />
               </Section>
               <Section title="Medical Profile">
-                <Row 
-                  label="G6PD" 
+                <Row
+                  label="G6PD"
                   value={
-                    <span style={{ 
-                      color: patient.g6pd === "Deficient" ? "#d32f2f" : "inherit",
-                      fontWeight: patient.g6pd === "Deficient" ? "bold" : "normal"
-                    }}>
+                    <span
+                      style={{
+                        color:
+                          patient.g6pd === "Deficient" ? "#d32f2f" : "inherit",
+                        fontWeight:
+                          patient.g6pd === "Deficient" ? "bold" : "normal",
+                      }}
+                    >
                       {patient.g6pd || "-"}
                     </span>
                   }
@@ -312,7 +316,9 @@ export default function PatientDetailView({ patientId, onBack }) {
                 value={editFormData.address}
                 onChange={handleEditChange}
                 rows={3}
-                style={{ width: "100%", fontFamily: "inherit" }}
+                style={{
+                  resize: "vertical"
+                }}
               />
               <div style={{ display: "flex", gap: "10px" }}>
                 <div style={{ flex: 1 }}>
@@ -552,6 +558,9 @@ export default function PatientDetailView({ patientId, onBack }) {
                 value={editFormData.other_notes || ""}
                 onChange={handleEditChange}
                 rows={2}
+                style={{
+                  resize: "vertical"
+                }}
               />
             </div>
           </div>
