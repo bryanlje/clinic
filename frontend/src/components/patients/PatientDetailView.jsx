@@ -6,12 +6,18 @@ import ConfirmButton from "../common/ConfirmButton";
 import { Section, Row } from "../common/LayoutHelpers";
 import CreateVisitForm from "../visits/CreateVisitForm";
 import VisitItem from "../visits/VisitItem";
+import SiblingSearchModal from "./SiblingSearchModal";
 
-export default function PatientDetailView({ patientId, onBack }) {
+export default function PatientDetailView({
+  patientId,
+  onBack,
+  onSelectPatient,
+}) {
   const [patient, setPatient] = useState(null);
   const [showVisitForm, setShowVisitForm] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editFormData, setEditFormData] = useState({});
+  const [showSiblingModal, setShowSiblingModal] = useState(false);
 
   useEffect(() => {
     fetchPatient();
@@ -36,6 +42,30 @@ export default function PatientDetailView({ patientId, onBack }) {
       alert(
         "Failed to delete patient. Ensure all related visits are handled or check connection.",
       );
+    }
+  };
+
+  const handleLinkSibling = async (sibling) => {
+    try {
+      // Immediately call backend to link
+      await axios.post(
+        `${API_URL}/patients/${patientId}/siblings/${sibling.id}`,
+      );
+      fetchPatient(); // Refresh data to see new link
+    } catch (err) {
+      alert(err.response?.data?.detail || "Failed to link sibling");
+    }
+  };
+
+  const handleUnlinkSibling = async (siblingId) => {
+    if (!window.confirm("Remove sibling link?")) return;
+    try {
+      await axios.delete(
+        `${API_URL}/patients/${patientId}/siblings/${siblingId}`,
+      );
+      fetchPatient(); // Refresh data
+    } catch (err) {
+      alert("Failed to unlink sibling");
     }
   };
 
@@ -104,6 +134,59 @@ export default function PatientDetailView({ patientId, onBack }) {
     return b.time.localeCompare(a.time);
   });
 
+  const renderSiblingsList = () => {
+    if (!patient.siblings || patient.siblings.length === 0) {
+      return (
+        <span style={{ color: "#888", fontStyle: "italic" }}>None linked</span>
+      );
+    }
+
+    // --- SORTING LOGIC ---
+    // Create a copy [...] so we don't mutate state directly
+    const sortedSiblings = [...patient.siblings].sort((a, b) => {
+        // Handle missing DOBs gracefully (put them at the end)
+        if (!a.date_of_birth) return 1;
+        if (!b.date_of_birth) return -1;
+        
+        // Oldest (Smallest Date) First
+        return new Date(a.date_of_birth) - new Date(b.date_of_birth);
+    });
+
+    return (
+      <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+        {sortedSiblings.map((sib) => (
+          <div
+            key={sib.id}
+            onClick={() => onSelectPatient(sib)}
+            title={sib.name} // Tooltip shows full name on hover
+            style={{
+              display: "flex",
+              alignItems: "center",
+              cursor: "pointer",
+              transition: "background 0.2s",
+              maxWidth: "100%", 
+            }}
+          >
+            <span
+              style={{
+                color: "#0948bd",
+                fontWeight: "500",
+                // TRUNCATION RULES
+                display: "block",
+                whiteSpace: "nowrap",     
+                overflow: "hidden",      
+                textOverflow: "ellipsis",
+                maxWidth: "220px",        // Adjust this pixel value to limit length
+              }}
+            >
+              {sib.name}
+            </span>
+          </div>
+        ))}
+      </div>
+    );
+  };
+
   return (
     <div>
       <div className="patient-header">
@@ -168,7 +251,7 @@ export default function PatientDetailView({ patientId, onBack }) {
                   value={patient.phone_number_secondary || "-"}
                 />
               </Section>
-              <Section title="Parents">
+              <Section title="Family Details">
                 <Row
                   label="Father"
                   value={`${patient.father_name || "-"} (${patient.father_occupation || "-"})`}
@@ -178,6 +261,7 @@ export default function PatientDetailView({ patientId, onBack }) {
                   value={`${patient.mother_name || "-"} (${patient.mother_occupation || "-"})`}
                 />
                 <Row label="Para" value={patient.para || "-"} />
+                <Row label="Siblings" value={renderSiblingsList()} />
               </Section>
               <Section title="Birth Details">
                 <Row label="Hospital" value={patient.hospital || "-"} />
@@ -226,7 +310,20 @@ export default function PatientDetailView({ patientId, onBack }) {
                   value={patient.tsh_mlul ? `${patient.tsh_mlul} mlU/L` : "-"}
                 />
                 <Row label="Feeding" value={patient.feeding || "-"} />
-                <Row label="Allergies" value={patient.allergies || "None"} />
+                <Row
+                  label="Allergies"
+                  value={
+                    <span
+                      style={{
+                        color: patient.allergies !== "" ? "#d32f2f" : "inherit",
+                        fontWeight:
+                          patient.allergies !== "" ? "bold" : "normal",
+                      }}
+                    >
+                      {patient.allergies || "None"}
+                    </span>
+                  }
+                />
                 <Row
                   label="Languages (Parents)"
                   value={patient.languages_parents?.join(", ") || "-"}
@@ -350,7 +447,7 @@ export default function PatientDetailView({ patientId, onBack }) {
 
             <div>
               <h4 className="edit-title" style={{ color: "#004cd8" }}>
-                Parents
+                Family Details
               </h4>
               <label className="edit-label">Father Name</label>
               <input
@@ -387,6 +484,97 @@ export default function PatientDetailView({ patientId, onBack }) {
                 value={editFormData.para || ""}
                 onChange={handleEditChange}
               />
+              <div style={{ paddingTop: "5px" }}>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
+                >
+                  <label className="edit-label" style={{ margin: 0 }}>
+                    Siblings Links
+                  </label>
+                  <button
+                    className="btn-secondary"
+                    onClick={() => setShowSiblingModal(true)}
+                    style={{ padding: "8px 15px", fontSize: "0.75rem" }}
+                  >
+                    + Add
+                  </button>
+                </div>
+
+                {patient.siblings && patient.siblings.length > 0 ? (
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "2px",
+                      marginTop: "5px"
+                    }}
+                  >
+                    {patient.siblings.map((sib) => (
+                      <div
+                        key={sib.id}
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          width: "100%"
+                        }}
+                      >
+                        <span
+                          style={{
+                            fontSize: "0.9rem",
+                            whiteSpace: "nowrap",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            maxWidth: "250px",
+                            marginRight: "5px",
+                          }}
+                          title={sib.name}
+                        >
+                          {sib.name}
+                        </span>
+                        <span
+                          style={{
+                            fontSize: "0.9rem",
+                            whiteSpace: "nowrap", // Prevents ID from breaking lines
+                            flexShrink: 0, // Ensures ID never gets squished
+                          }}
+                        >
+                          ({sib.display_id})
+                        </span>
+                        <button
+                          onClick={() => handleUnlinkSibling(sib.id)}
+                          style={{
+                            fontSize: "0.8rem",
+                            color: "#d32f2f",
+                            background: "none",
+                            border: "none",
+                            cursor: "pointer",
+                            fontWeight: "bold",
+                            marginLeft: "auto",
+                            padding: "5px 0px 5px 15px",
+                          }}
+                        >
+                          Unlink
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div
+                    style={{
+                      fontStyle: "italic",
+                      color: "#999",
+                      fontSize: "0.85rem",
+                      marginTop: "5px"
+                    }}
+                  >
+                    No siblings linked
+                  </div>
+                )}
+              </div>
             </div>
 
             <div>
@@ -490,6 +678,14 @@ export default function PatientDetailView({ patientId, onBack }) {
                 name="allergies"
                 value={editFormData.allergies || ""}
                 onChange={handleEditChange}
+                style={{
+                  // If deficient, make text red and bold
+                  color: editFormData.allergies !== "" ? "#d32f2f" : "inherit",
+                  fontWeight: editFormData.allergies !== "" ? "bold" : "normal",
+                  borderWidth: editFormData.allergies !== "" ? "2px" : "1px",
+                  borderColor:
+                    editFormData.allergies !== "" ? "#d32f2f" : "#ccc",
+                }}
               />
             </div>
 
@@ -646,6 +842,12 @@ export default function PatientDetailView({ patientId, onBack }) {
           Delete Patient File
         </ConfirmButton>
       </div>
+
+      <SiblingSearchModal
+        isOpen={showSiblingModal}
+        onClose={() => setShowSiblingModal(false)}
+        onSelect={handleLinkSibling}
+      />
     </div>
   );
 }

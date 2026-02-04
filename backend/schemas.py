@@ -92,11 +92,18 @@ class PatientBase(BaseModel):
     other_notes: Optional[str] = None
 
 class PatientCreate(PatientBase):
-    pass
+    sibling_ids: List[UUID4] = []
+
+class PatientSummary(BaseModel):
+    id: UUID4
+    name: str
+    display_id: str
+    date_of_birth: date_type
 
 class Patient(PatientBase):
     id: UUID
     visits: List[Visit] = []
+    siblings: List[PatientSummary] = []
     class Config:
         from_attributes = True
 

@@ -2,6 +2,7 @@ import { useState } from "react";
 import axios from "axios";
 import { API_URL } from "../../api/config";
 import ConfirmButton from "../common/ConfirmButton";
+import SiblingSearchModal from "./SiblingSearchModal";
 
 export default function CreatePatientForm({ onSuccess, onCancel }) {
   const [formData, setFormData] = useState({
@@ -31,6 +32,9 @@ export default function CreatePatientForm({ onSuccess, onCancel }) {
     vaccination_summary: "",
     other_notes: "",
   });
+
+  const [siblings, setSiblings] = useState([]);
+  const [showSiblingModal, setShowSiblingModal] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -71,6 +75,7 @@ export default function CreatePatientForm({ onSuccess, onCancel }) {
           ? parseInt(formData.birth_ofc_cm)
           : null,
         tsh_mlul: formData.tsh_mlul ? parseInt(formData.tsh_mlul) : null,
+        sibling_ids: siblings.map(s => s.id)
       };
 
       await axios.post(`${API_URL}/patients/`, payload);
@@ -228,9 +233,9 @@ export default function CreatePatientForm({ onSuccess, onCancel }) {
           </div>
         </div>
 
-        {/* ... Card 2: Parent Details ... */}
+        {/* ... Card 2: Family Details ... */}
         <div className="card">
-          <h3>Parents Info</h3>
+          <h3>Family Info</h3>
           <div className="form-grid">
             <div>
               <label>Father's Name</label>
@@ -279,6 +284,29 @@ export default function CreatePatientForm({ onSuccess, onCancel }) {
               value={formData.para}
               placeholder="Optional"
             />
+          </div>
+          <div style={{ marginTop: "20px" }}>
+            <label style={{display: 'block', marginBottom: '10px'}}>Siblings (Optional)</label>
+            
+            <div style={{display: 'flex', gap: '10px', flexWrap: 'wrap', marginBottom: '10px'}}>
+                {siblings.map(sib => (
+                    <div key={sib.id} style={{
+                        background: '#e3f2fd', padding: '5px 12px', borderRadius: '8px',
+                        display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.8rem',
+                        border: '1px solid #90caf9'
+                    }}>
+                        <span style={{fontWeight: 'bold', color: '#1565c0'}}>{sib.name}</span>
+                        <span style={{color: '#555'}}>({sib.display_id})</span>
+                        <button type="button" onClick={() => setSiblings(siblings.filter(s => s.id !== sib.id))} 
+                            style={{border: 'none', background: 'none', cursor: 'pointer', color: '#d32f2f', fontWeight: 'bold', fontSize: '1.5rem', lineHeight: '1', padding: "2px 5px"}}>×
+                        </button>
+                    </div>
+                ))}
+                
+                <button type="button" className="btn-secondary" onClick={() => setShowSiblingModal(true)} style={{fontSize: '0.8rem', padding: '10px 15px'}}>
+                    + Add Sibling Link
+                </button>
+            </div>
           </div>
         </div>
 
@@ -589,6 +617,18 @@ export default function CreatePatientForm({ onSuccess, onCancel }) {
           </div>
         </div>
       </form>
+
+      {/* SIBLING MODAL */}
+      <SiblingSearchModal 
+        isOpen={showSiblingModal}
+        onClose={() => setShowSiblingModal(false)}
+        onSelect={(newSib) => {
+            if (!siblings.find(s => s.id === newSib.id)) {
+                setSiblings([...siblings, newSib]);
+            }
+        }}
+      />
+
     </div>
   );
 }

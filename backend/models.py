@@ -1,8 +1,15 @@
 import uuid
-from sqlalchemy import Column, Float, Integer, String, Boolean, Date, Time, ForeignKey, func
+from sqlalchemy import Column, Float, Integer, String, Boolean, Date, Time, ForeignKey, func, Table
 from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import ARRAY, UUID
 from database import Base
+
+# Association Table for Siblings
+patient_siblings = Table(
+    'patient_siblings', Base.metadata,
+    Column('patient_id', UUID(as_uuid=True), ForeignKey('patients.id'), primary_key=True),
+    Column('sibling_id', UUID(as_uuid=True), ForeignKey('patients.id'), primary_key=True)
+)
 
 class Patient(Base):
     __tablename__ = "patients"
@@ -39,6 +46,13 @@ class Patient(Base):
     other_notes = Column(String, nullable=True)
     
     visits = relationship("Visit", back_populates="patient", cascade="all, delete-orphan")
+    siblings = relationship(
+        'Patient',
+        secondary=patient_siblings,
+        primaryjoin=id==patient_siblings.c.patient_id,
+        secondaryjoin=id==patient_siblings.c.sibling_id,
+        lazy="select" # loads only when accessing .siblings
+    )
 
 class Visit(Base):
     __tablename__ = "visits"

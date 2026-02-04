@@ -54,6 +54,7 @@ function App() {
           <PatientDetailView 
             patientId={selectedPatient.id} 
             onBack={goHome} 
+            onSelectPatient={(patient) => setSelectedPatient(patient)}
           />
         )}
       </main>

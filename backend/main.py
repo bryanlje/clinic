@@ -6,6 +6,7 @@ from sqlalchemy import or_, func, cast, Integer
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from datetime import date
+from uuid import UUID
 from fastapi.middleware.cors import CORSMiddleware
 
 from reportlab.lib import colors
@@ -30,8 +31,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
+#####################################################
 # --- Helper Functions ---
+#####################################################
+
 def get_password_hash(password: str) -> str:
     # 1. Generate a random salt
     salt = os.urandom(16).hex()
@@ -51,8 +54,29 @@ def verify_password(plain_password: str, stored_value: str) -> bool:
     except ValueError:
         # Handles cases where stored_value format is wrong
         return False
+    
+# --- Enforce symmetry for sibling connections ---
+def create_sibling_link(db: Session, patient_a_id, patient_b_id):
+    """Ensures A is linked to B, and B is linked to A (Idempotent)"""
+    # Check A -> B
+    exists_a = db.query(models.patient_siblings).filter_by(
+        patient_id=patient_a_id, sibling_id=patient_b_id
+    ).first()
+    if not exists_a:
+        stmt = models.patient_siblings.insert().values(patient_id=patient_a_id, sibling_id=patient_b_id)
+        db.execute(stmt)
 
+    # Check B -> A
+    exists_b = db.query(models.patient_siblings).filter_by(
+        patient_id=patient_b_id, sibling_id=patient_a_id
+    ).first()
+    if not exists_b:
+        stmt = models.patient_siblings.insert().values(patient_id=patient_b_id, sibling_id=patient_a_id)
+        db.execute(stmt)
+
+#####################################################
 # --- API ROUTES ---
+#####################################################
 
 @app.post("/api/patients/", response_model=schemas.Patient)
 def create_patient(patient: schemas.PatientCreate, db: Session = Depends(database.get_db)):
@@ -61,10 +85,33 @@ def create_patient(patient: schemas.PatientCreate, db: Session = Depends(databas
     if existing:
         raise HTTPException(status_code=400, detail="Patient ID already exists")
     
-    db_patient = models.Patient(**patient.dict())
+    patient_data = patient.dict()
+    sibling_ids = patient_data.pop("sibling_ids", []) # Remove from dict
+    
+    db_patient = models.Patient(**patient_data)
     db.add(db_patient)
     db.commit()
     db.refresh(db_patient)
+
+    if sibling_ids:
+        # Use a set to avoid duplicates
+        network_ids = set(sibling_ids)        
+        # Find existing siblings of the selected siblings
+        existing_relatives = db.query(models.patient_siblings).filter(
+            models.patient_siblings.c.patient_id.in_(sibling_ids)
+        ).all()
+        
+        for row in existing_relatives:
+            network_ids.add(row.sibling_id)
+            
+        # Create links to everyone found
+        for target_id in network_ids:
+            if target_id == db_patient.id: continue
+            create_sibling_link(db, db_patient.id, target_id)
+            
+        db.commit()
+        db.refresh(db_patient)
+
     return db_patient
 
 @app.get("/api/patients/search/", response_model=List[schemas.Patient])
@@ -178,6 +225,70 @@ async def delete_patient(patient_id: str, db: Session = Depends(database.get_db)
     db.commit()
 
     return {"status": "success", "message": f"Patient {patient.name} and all associated records deleted."}
+
+@app.post("/api/patients/{patient_id}/siblings/{sibling_id}")
+def link_sibling(patient_id: UUID, sibling_id: UUID, db: Session = Depends(database.get_db)):
+    if patient_id == sibling_id:
+        raise HTTPException(status_code=400, detail="Cannot be own sibling")
+
+    # 1. Fetch the main patient to find their EXISTING network
+    patient = db.query(models.Patient).filter(models.Patient.id == patient_id).first()
+    if not patient:
+        raise HTTPException(status_code=404, detail="Patient not found")
+
+    # 2. Get list of all IDs in the current 'clique' (Patient + their existing siblings)
+    # We include patient_id itself because the new sibling needs to link to the patient too.
+    existing_family_ids = [s.id for s in patient.siblings]
+    existing_family_ids.append(patient_id)
+
+    # 3. Link the NEW sibling to EVERYONE in that list
+    for family_member_id in existing_family_ids:
+        # Skip if we are trying to link the sibling to themselves
+        if family_member_id == sibling_id:
+            continue
+            
+        create_sibling_link(db, family_member_id, sibling_id)
+
+    db.commit()
+    return {"status": "linked_to_network"}
+
+@app.delete("/api/patients/{patient_id}/siblings/{sibling_id}")
+def unlink_sibling(patient_id: UUID, sibling_id: UUID, db: Session = Depends(database.get_db)):
+    """
+    Removes the sibling from the Patient, AND from all of the Patient's other siblings.
+    Essentially removes 'sibling_id' from this specific family cluster.
+    """
+    
+    # 1. Fetch the patient to identify the group
+    patient = db.query(models.Patient).filter(models.Patient.id == patient_id).first()
+    if not patient:
+        raise HTTPException(status_code=404, detail="Patient not found")
+
+    # 2. Identify the group: The patient + all their siblings
+    # We want to break the link between 'sibling_id' and ANYONE in this group
+    group_ids = [s.id for s in patient.siblings]
+    group_ids.append(patient_id)
+
+    # 3. Execute Deletions
+    # Remove links where one side is the sibling_id and the other is in the group
+    for member_id in group_ids:
+        if member_id == sibling_id: 
+            continue
+
+        # Remove Member -> Sibling
+        db.execute(models.patient_siblings.delete().where(
+            (models.patient_siblings.c.patient_id == member_id) & 
+            (models.patient_siblings.c.sibling_id == sibling_id)
+        ))
+        
+        # Remove Sibling -> Member
+        db.execute(models.patient_siblings.delete().where(
+            (models.patient_siblings.c.patient_id == sibling_id) & 
+            (models.patient_siblings.c.sibling_id == member_id)
+        ))
+
+    db.commit()
+    return {"status": "unlinked_from_network"}
 
 @app.get("/api/patients/next-id/{prefix}")
 def get_next_id(prefix: str, db: Session = Depends(database.get_db)):
