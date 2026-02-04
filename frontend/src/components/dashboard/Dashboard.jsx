@@ -6,6 +6,8 @@ import ExportMedicationModal from "../menu/ExportMedicationModal";
 import ChangePinModal from "../menu/ChangePinModal";
 import ChangeSearchLimitModal from "../menu/ChangeSearchLimitModal";
 
+import { getRecentPatients } from "../../utils/recentPatients";
+
 export default function Dashboard({ onNavigateCreate, onSelectPatient }) {
   const [isAdvanced, setIsAdvanced] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -29,6 +31,7 @@ export default function Dashboard({ onNavigateCreate, onSelectPatient }) {
   const [showExportModal, setShowExportModal] = useState(false);
   const [showPinModal, setShowPinModal] = useState(false);
   const [showLimitModal, setShowLimitModal] = useState(false);
+  const [recentPatients, setRecentPatients] = useState([]);
 
   const toggleMenu = () => setShowMenu(!showMenu);
 
@@ -60,6 +63,11 @@ export default function Dashboard({ onNavigateCreate, onSelectPatient }) {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [menuRef]);
+
+  // Load Recent Patients on mount
+  useEffect(() => {
+    setRecentPatients(getRecentPatients());
+  }, []);
 
   const handleBasicSearch = async (e) => {
     e.preventDefault();
@@ -145,6 +153,7 @@ export default function Dashboard({ onNavigateCreate, onSelectPatient }) {
           onSave={(newVal) => setSearchLimit(newVal)}
         />
       )}
+      
       <div className="card">
         <div
           style={{
@@ -508,6 +517,26 @@ export default function Dashboard({ onNavigateCreate, onSelectPatient }) {
           ))}
         </ul>
       </div>
+
+      {recentPatients.length > 0 && (
+        <div style={{ marginBottom: "20px" }}>
+          <h4 style={{ color: "#666", marginBottom: "10px", fontSize: "0.9rem", textTransform: "uppercase", letterSpacing: "1px" }}>
+            Recently Viewed
+          </h4>
+          <div style={{ display: "flex", gap: "15px", flexWrap: "wrap" }}>
+            {recentPatients.map((p) => (
+              <div 
+                key={p.id}
+                onClick={() => onSelectPatient(p)} // Re-uses the open logic
+                className="recent-card"
+              >
+                <div className="recent-name">{p.name}</div>
+                <div style={{ fontSize: "0.8rem", color: "#666" }}>ID: {p.display_id}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       <button onClick={onNavigateCreate} className="fab">
         + New Patient

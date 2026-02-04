@@ -721,3 +721,33 @@ button {
   width: auto;
   margin: 0;
 }
+
+/* Recently Viewed Cards */
+.recent-card {
+  background-color: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 10px 15px;
+  cursor: pointer;
+  width: calc(20% - 15px); /* Force 5 cards per row (accounting for 10px gap) */
+  min-width: 140px;        /* Prevent getting too small on mobile */
+  box-sizing: border-box;  /* Ensure padding doesn't expand width */
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.recent-card:hover {
+  border-color: #004cd8;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px rgba(0,76,216,0.1);
+}
+
+.recent-name {
+  font-weight: bold;
+  font-size: 0.95rem;
+  color: var(--primary-color);
+  white-space: nowrap;      /* Force text to stay on one line */
+  overflow: hidden;         /* Hide anything that goes outside the box */
+  text-overflow: ellipsis;  /* Add the "..." at the end */
+  display: block;           /* Ensure it respects width */
+}

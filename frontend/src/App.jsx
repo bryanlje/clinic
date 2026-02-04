@@ -5,6 +5,7 @@ import "./App.css";
 import Dashboard from "./components/dashboard/Dashboard";
 import CreatePatientForm from "./components/patients/CreatePatientForm";
 import PatientDetailView from "./components/patients/PatientDetailView";
+import { addRecentPatient } from "./utils/recentPatients";
 
 function App() {
   const [view, setView] = useState("home");
@@ -38,6 +39,7 @@ function App() {
           <Dashboard
             onNavigateCreate={() => setView("createPatient")}
             onSelectPatient={(patient) => {
+              addRecentPatient(patient)
               setSelectedPatient(patient);
               setView("patientDetails");
             }}
