@@ -1,15 +1,17 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { API_URL } from "../../api/config";
 
 import ExportMedicationModal from "../menu/ExportMedicationModal";
 import ChangePinModal from "../menu/ChangePinModal";
+import ChangeSearchLimitModal from "../menu/ChangeSearchLimitModal";
 
 export default function Dashboard({ onNavigateCreate, onSelectPatient }) {
   const [isAdvanced, setIsAdvanced] = useState(false);
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState([]);
   const [hasSearched, setHasSearched] = useState(false);
+  const [searchLimit, setSearchLimit] = useState(25); // Default to 25 initially
   const [basicQuery, setBasicQuery] = useState("");
   const [advParams, setAdvParams] = useState({
     name: "",
@@ -23,12 +25,41 @@ export default function Dashboard({ onNavigateCreate, onSelectPatient }) {
     dob_end: "",
   });
   const [showMenu, setShowMenu] = useState(false);
+  const menuRef = useRef(null);
   const [showExportModal, setShowExportModal] = useState(false);
   const [showPinModal, setShowPinModal] = useState(false);
+  const [showLimitModal, setShowLimitModal] = useState(false);
 
   const toggleMenu = () => setShowMenu(!showMenu);
 
-  const SEARCH_LIMIT = 25;
+  // Fetch Limit on Mount ---
+  useEffect(() => {
+    const fetchLimit = async () => {
+      try {
+        const res = await axios.get(`${API_URL}/config/search_limit`);
+        // Backend returns string, convert to int
+        setSearchLimit(parseInt(res.data.value) || 25);
+      } catch (err) {
+        console.error("Failed to load search config", err);
+      }
+    };
+    fetchLimit();
+  }, []);
+
+  // Add Event Listener to detect clicks outside Menu
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setShowMenu(false);
+      }
+    }
+    // Bind the event listener
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      // Unbind the event listener on clean up
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [menuRef]);
 
   const handleBasicSearch = async (e) => {
     e.preventDefault();
@@ -52,7 +83,7 @@ export default function Dashboard({ onNavigateCreate, onSelectPatient }) {
       const queryParams = new URLSearchParams(paramsObj);
 
       // Append the SEARCH_LIMIT param
-      queryParams.append("limit", SEARCH_LIMIT + 1);
+      queryParams.append("limit", searchLimit + 1);
 
       const res = await axios.get(
         `${API_URL}/patients/search/?${queryParams.toString()}`,
@@ -95,8 +126,8 @@ export default function Dashboard({ onNavigateCreate, onSelectPatient }) {
     return sortedVisits[0].date;
   };
 
-  const searchLimitReached = results.length > SEARCH_LIMIT;
-  const visibleSearchResults = results.slice(0, SEARCH_LIMIT);
+  const searchLimitReached = results.length > searchLimit;
+  const visibleSearchResults = results.slice(0, searchLimit);
 
   return (
     <div>
@@ -105,6 +136,14 @@ export default function Dashboard({ onNavigateCreate, onSelectPatient }) {
       )}
       {showPinModal && (
         <ChangePinModal isOpen={true} onClose={() => setShowPinModal(false)} />
+      )}
+      {showLimitModal && (
+        <ChangeSearchLimitModal
+          isOpen={true}
+          onClose={() => setShowLimitModal(false)}
+          currentLimit={searchLimit}
+          onSave={(newVal) => setSearchLimit(newVal)}
+        />
       )}
       <div className="card">
         <div
@@ -131,7 +170,7 @@ export default function Dashboard({ onNavigateCreate, onSelectPatient }) {
               {isAdvanced ? "Basic Search" : "Advanced Search"}
             </button>
 
-            <div style={{ position: "relative" }}>
+            <div style={{ position: "relative" }} ref={menuRef}>
               <button
                 className="btn-secondary"
                 onClick={toggleMenu}
@@ -150,6 +189,16 @@ export default function Dashboard({ onNavigateCreate, onSelectPatient }) {
                     }}
                   >
                     📋 Export Medication Log
+                  </button>
+
+                  <button
+                    className="menu-item"
+                    onClick={() => {
+                      setShowLimitModal(true);
+                      setShowMenu(false);
+                    }}
+                  >
+                    🔢 Change Search Limit
                   </button>
 
                   <button
@@ -413,7 +462,7 @@ export default function Dashboard({ onNavigateCreate, onSelectPatient }) {
             Results{" "}
             {hasSearched &&
               (searchLimitReached
-                ? `(${SEARCH_LIMIT}+)`
+                ? `(${searchLimit}+)`
                 : `(${results.length})`)}
           </h3>
 
@@ -426,8 +475,7 @@ export default function Dashboard({ onNavigateCreate, onSelectPatient }) {
                 fontWeight: "bold",
               }}
             >
-              ⚠️ More than {SEARCH_LIMIT} results found. Please be more
-              specific.
+              ⚠️ More than {searchLimit} results found. Please be more specific.
             </span>
           )}
         </div>

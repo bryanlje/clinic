@@ -106,3 +106,6 @@ class PinVerify(BaseModel):
 class PinUpdate(BaseModel):
     current_pin: str
     new_pin: str
+
+class ConfigUpdate(BaseModel):
+    value: str

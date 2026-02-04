@@ -674,7 +674,7 @@ export default function VisitItem({ visit, patientId, patientDOB, onUpdate }) {
                     display: "flex",
                     justifyContent: "space-between",
                     alignItems: "center",
-                    marginBottom: "10px",
+                    marginBottom: "5px",
                   }}
                 >
                   <h5

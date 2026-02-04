@@ -409,7 +409,7 @@ export default function CreateVisitForm({ patientId, patientDOB, onSuccess }) {
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
-            marginBottom: "10px",
+            marginBottom: "5px",
           }}
         >
           <h5 className="section-header" style={{ margin: 0, border: "none" }}>

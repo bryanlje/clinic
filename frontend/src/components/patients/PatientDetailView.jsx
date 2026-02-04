@@ -247,7 +247,13 @@ export default function PatientDetailView({ patientId, onBack }) {
               <span style={{ fontWeight: "bold", color: "#555" }}>
                 Vaccination History:{" "}
               </span>
-              <span style={{ fontStyle: "italic", color: "#555", whiteSpace: "pre-wrap" }}>
+              <span
+                style={{
+                  fontStyle: "italic",
+                  color: "#555",
+                  whiteSpace: "pre-wrap",
+                }}
+              >
                 {patient.vaccination_summary || "None."}
               </span>
             </div>

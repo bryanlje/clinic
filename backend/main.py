@@ -542,6 +542,41 @@ def change_admin_pin(payload: schemas.PinUpdate, db: Session = Depends(database.
     db.commit()
     return {"status": "updated"}
 
+# --- GENERIC CONFIG ENDPOINTS ---
+
+@app.get("/api/config/{key}")
+def get_system_config(key: str, db: Session = Depends(database.get_db)):
+    """
+    Retrieves a config value. Returns a default if not found.
+    """
+    conf = db.query(models.SystemConfig).filter(models.SystemConfig.key == key).first()
+    
+    # Define defaults for specific keys here
+    default_value = "25" 
+    
+    if not conf:
+        return {"key": key, "value": default_value}
+    
+    return {"key": key, "value": conf.value}
+
+@app.put("/api/config/{key}")
+def update_system_config(key: str, payload: schemas.ConfigUpdate, db: Session = Depends(database.get_db)):
+    """
+    Updates or Creates a config value.
+    """
+    conf = db.query(models.SystemConfig).filter(models.SystemConfig.key == key).first()
+    
+    if not conf:
+        # Create if doesn't exist
+        conf = models.SystemConfig(key=key, value=payload.value)
+        db.add(conf)
+    else:
+        # Update if exists
+        conf.value = payload.value
+        
+    db.commit()
+    db.refresh(conf)
+    return {"status": "updated", "key": key, "value": conf.value}
 
 # --- SERVE REACT FRONTEND (Production Mode) ---
 # This checks if the 'dist' folder exists (created by 'npm run build')

@@ -98,4 +98,4 @@ class SystemConfig(Base):
     __tablename__ = "system_configs"
     
     key = Column(String, primary_key=True, index=True)
-    value = Column(String, nullable=False) # Will store the hashed PIN
+    value = Column(String, nullable=False)
