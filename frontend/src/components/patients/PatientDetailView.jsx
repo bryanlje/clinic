@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import axios from "axios";
 import { API_URL } from "../../api/config";
 import { calculateAge } from "../../utils/helpers";
@@ -141,47 +142,46 @@ export default function PatientDetailView({
       );
     }
 
-    // --- SORTING LOGIC ---
-    // Create a copy [...] so we don't mutate state directly
     const sortedSiblings = [...patient.siblings].sort((a, b) => {
-        // Handle missing DOBs gracefully (put them at the end)
         if (!a.date_of_birth) return 1;
         if (!b.date_of_birth) return -1;
-        
-        // Oldest (Smallest Date) First
         return new Date(a.date_of_birth) - new Date(b.date_of_birth);
     });
 
     return (
       <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
         {sortedSiblings.map((sib) => (
-          <div
+          <Link
             key={sib.id}
-            onClick={() => onSelectPatient(sib)}
-            title={sib.name} // Tooltip shows full name on hover
+            to={`/patient/${sib.id}`} // <--- The Magic Link
+            onClick={() => onSelectPatient(sib)} // Keep state sync logic
+            title={sib.name} 
             style={{
               display: "flex",
               alignItems: "center",
               cursor: "pointer",
-              transition: "background 0.2s",
-              maxWidth: "100%", 
+              transition: "opacity 0.2s",
+              maxWidth: "100%",
+              textDecoration: "none", // Remove default underline
             }}
+            onMouseEnter={(e) => e.currentTarget.style.opacity = "0.8"}
+            onMouseLeave={(e) => e.currentTarget.style.opacity = "1"}
           >
             <span
               style={{
                 color: "#0948bd",
                 fontWeight: "500",
-                // TRUNCATION RULES
                 display: "block",
                 whiteSpace: "nowrap",     
                 overflow: "hidden",      
                 textOverflow: "ellipsis",
-                maxWidth: "220px",        // Adjust this pixel value to limit length
+                maxWidth: "220px",
+                textDecoration: "none",
               }}
             >
               {sib.name}
             </span>
-          </div>
+          </Link>
         ))}
       </div>
     );
@@ -214,6 +214,7 @@ export default function PatientDetailView({
               setIsEditing(true);
             }
           }}
+          style={{ marginLeft: "20px" }}
         >
           {isEditing ? "Cancel Edit" : "Edit Details"}
         </button>
@@ -510,7 +511,7 @@ export default function PatientDetailView({
                       display: "flex",
                       flexDirection: "column",
                       gap: "2px",
-                      marginTop: "5px"
+                      marginTop: "5px",
                     }}
                   >
                     {patient.siblings.map((sib) => (
@@ -519,7 +520,7 @@ export default function PatientDetailView({
                         style={{
                           display: "flex",
                           alignItems: "center",
-                          width: "100%"
+                          width: "100%",
                         }}
                       >
                         <span
@@ -568,7 +569,7 @@ export default function PatientDetailView({
                       fontStyle: "italic",
                       color: "#999",
                       fontSize: "0.85rem",
-                      marginTop: "5px"
+                      marginTop: "5px",
                     }}
                   >
                     No siblings linked

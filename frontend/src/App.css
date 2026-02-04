@@ -23,6 +23,19 @@ select {
   font-family: inherit;
 }
 
+/* To support Links looking like buttons */
+a.btn-secondary, a.btn-primary, a.btn-danger {
+  display: inline-flex;  
+  align-items: center;
+  justify-content: center; 
+  text-decoration: none;
+  box-sizing: border-box;
+  line-height: normal; 
+  font-family: inherit;
+  font-size: inherit;
+  cursor: pointer;
+}
+
 body {
   background-color: var(--bg-color);
   color: var(--text-dark);

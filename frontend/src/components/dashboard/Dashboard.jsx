@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { Link } from "react-router-dom";
 import axios from "axios";
 import { API_URL } from "../../api/config";
 
@@ -507,12 +508,20 @@ export default function Dashboard({ onNavigateCreate, onSelectPatient }) {
                   {getLastVisitDate(p.visits)}
                 </div>
               </div>
-              <button
+              <Link
+                to={`/patient/${p.id}`}
                 className="btn-secondary"
                 onClick={() => onSelectPatient(p)}
+                style={{
+                  padding: "8px 25px",
+                  borderRadius: "6px",
+                  border: "none",
+                  fontWeight: "600",
+                  fontSize: "0.9rem"
+                }}
               >
                 Open
-              </button>
+              </Link>
             </li>
           ))}
         </ul>
@@ -525,14 +534,16 @@ export default function Dashboard({ onNavigateCreate, onSelectPatient }) {
           </h4>
           <div style={{ display: "flex", gap: "15px", flexWrap: "wrap" }}>
             {recentPatients.map((p) => (
-              <div 
+              <Link 
+                to={`/patient/${p.id}`} // The URL
                 key={p.id}
-                onClick={() => onSelectPatient(p)} // Re-uses the open logic
                 className="recent-card"
+                style={{ textDecoration: 'none', color: 'inherit' }} // Remove default blue underline
+                onClick={() => onSelectPatient(p)} // Keep the "add to recent" logic refreshing
               >
                 <div className="recent-name">{p.name}</div>
                 <div style={{ fontSize: "0.8rem", color: "#666" }}>ID: {p.display_id}</div>
-              </div>
+              </Link>
             ))}
           </div>
         </div>
