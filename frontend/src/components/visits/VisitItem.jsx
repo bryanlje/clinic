@@ -703,7 +703,7 @@ export default function VisitItem({ visit, patientId, patientDOB, onUpdate }) {
                       checked={isManualMC}
                       onChange={toggleManualMC}
                     />
-                    Manual Override
+                    Manual Entry
                   </label>
                 </div>
 

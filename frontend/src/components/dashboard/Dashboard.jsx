@@ -184,7 +184,7 @@ export default function Dashboard({ onNavigateCreate, onSelectPatient }) {
               <button
                 className="btn-secondary"
                 onClick={toggleMenu}
-                style={{ padding: "10px 15px", fontWeight: "bold" }}
+                style={{ padding: "10px 20px", fontWeight: "bold" }}
               >
                 ☰ Menu
               </button>

@@ -434,7 +434,7 @@ export default function CreateVisitForm({ patientId, patientDOB, onSuccess }) {
               onChange={(e) => setIsManualMC(e.target.checked)}
               style={{ margin: 0, width: "auto" }}
             />
-            Manual Override
+            Manual Entry
           </label>
         </div>
 

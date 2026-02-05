@@ -1,10 +1,10 @@
 :root {
   --primary-color: #0948bd;
   --primary-hover: #00448d;
-  --success-color: #1cb440;
-  --success-color-dark: #1a9b38;
+  --success-color: #089e2b;
+  --success-color-dark: #0b7e26;
   --danger-color: #cf192b;
-  --danger-color-dark: #b41625;
+  --danger-color-dark: #aa1524;
   --bg-color: #f0f2f5;
   --card-bg: #ffffff;
   --text-dark: #333333;
@@ -12,7 +12,7 @@
   --border-light: #eee;
   --border-color: #ddd;
   --secondary-grey: #e2e6ea;
-  --secondary-grey-dark: #d0d5da;
+  --secondary-grey-dark: #c2c7ceda;
   --item-background-grey: #f8f9fa;
 }
 
@@ -742,7 +742,7 @@ button {
   border-radius: 8px;
   padding: 10px 15px;
   cursor: pointer;
-  width: calc(20% - 15px); /* Force 5 cards per row (accounting for 10px gap) */
+  width: calc(20% - 12px); /* Force 5 cards per row (accounting for 10px gap) */
   min-width: 140px;        /* Prevent getting too small on mobile */
   box-sizing: border-box;  /* Ensure padding doesn't expand width */
   transition: all 0.2s ease;

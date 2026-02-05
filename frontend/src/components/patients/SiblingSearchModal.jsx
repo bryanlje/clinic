@@ -40,7 +40,7 @@ export default function SiblingSearchModal({ isOpen, onClose, onSelect }) {
             <button type="submit" className="btn-primary" disabled={loading}>Search</button>
         </form>
 
-        <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
+        <div style={{ maxHeight: '450px', overflowY: 'auto' }}>
             {results.map(p => (
                 <div key={p.id} style={{ 
                     display: 'flex', justifyContent: 'space-between', alignItems: 'center',

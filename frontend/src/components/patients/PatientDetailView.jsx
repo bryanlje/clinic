@@ -160,23 +160,29 @@ export default function PatientDetailView({
               display: "flex",
               alignItems: "center",
               cursor: "pointer",
-              transition: "opacity 0.2s",
+              transition: "color 0.1s ease-in-out",
               maxWidth: "100%",
               textDecoration: "none", // Remove default underline
+              color: "#0948bd"
             }}
-            onMouseEnter={(e) => e.currentTarget.style.opacity = "0.8"}
-            onMouseLeave={(e) => e.currentTarget.style.opacity = "1"}
+            onMouseEnter={(e) => {
+                e.currentTarget.style.textDecoration = "underline";
+                e.currentTarget.style.color = "black";
+            }}
+            onMouseLeave={(e) => {
+                e.currentTarget.style.textDecoration = "none";
+                e.currentTarget.style.color = "#0948bd"; // Back to blue
+            }}
           >
             <span
               style={{
-                color: "#0948bd",
+                color: "inherit",
                 fontWeight: "500",
                 display: "block",
                 whiteSpace: "nowrap",     
                 overflow: "hidden",      
                 textOverflow: "ellipsis",
                 maxWidth: "220px",
-                textDecoration: "none",
               }}
             >
               {sib.name}
@@ -292,14 +298,25 @@ export default function PatientDetailView({
               </Section>
               <Section title="Medical Profile">
                 <Row
-                  label="G6PD"
+                  label={
+                    <span
+                      style={{
+                        color:
+                          patient.g6pd === "Deficient" ? "#d32f2f" : "inherit",
+                        fontWeight:
+                          patient.g6pd === "Deficient" ? "bold" : "inherit",
+                      }}
+                    >
+                      G6PD
+                    </span>
+                  }
                   value={
                     <span
                       style={{
                         color:
                           patient.g6pd === "Deficient" ? "#d32f2f" : "inherit",
                         fontWeight:
-                          patient.g6pd === "Deficient" ? "bold" : "normal",
+                          patient.g6pd === "Deficient" ? "bold" : "inherit",
                       }}
                     >
                       {patient.g6pd || "-"}
@@ -312,13 +329,23 @@ export default function PatientDetailView({
                 />
                 <Row label="Feeding" value={patient.feeding || "-"} />
                 <Row
-                  label="Allergies"
+                  label={
+                    <span
+                      style={{
+                        color: patient.allergies !== "" ? "#d32f2f" : "inherit",
+                        fontWeight:
+                          patient.allergies !== "" ? "bold" : "inherit",
+                      }}
+                    >
+                      Allergies
+                    </span>
+                  }
                   value={
                     <span
                       style={{
                         color: patient.allergies !== "" ? "#d32f2f" : "inherit",
                         fontWeight:
-                          patient.allergies !== "" ? "bold" : "normal",
+                          patient.allergies !== "" ? "bold" : "inherit",
                       }}
                     >
                       {patient.allergies || "None"}
@@ -330,7 +357,7 @@ export default function PatientDetailView({
                   value={patient.languages_parents?.join(", ") || "-"}
                 />
                 <Row
-                  label="Languages (Children)"
+                  label="Languages (Child)"
                   value={patient.languages_children?.join(", ") || "-"}
                 />
               </Section>
@@ -720,7 +747,7 @@ export default function PatientDetailView({
                   </label>
                 ))}
               </div>
-              <label className="edit-label">Languages (Children)</label>
+              <label className="edit-label">Languages (Child)</label>
               <div
                 style={{
                   display: "flex",
