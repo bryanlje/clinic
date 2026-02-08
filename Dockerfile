@@ -47,4 +47,4 @@ ENTRYPOINT ["/app/backend/entrypoint.sh"]
 
 # Run Command: Gunicorn running FastAPI (passed as "$@" to the entrypoint)
 # "backend.main:app" means look in backend folder, main.py file, app object
-CMD ["gunicorn", "-w", "4", "-k", "uvicorn.workers.UvicornWorker", "-b", "0.0.0.0:8000", "backend.main:app"]
+CMD ["gunicorn", "-w", "2", "-k", "uvicorn.workers.UvicornWorker", "-b", "0.0.0.0:8000", "backend.main:app"]
