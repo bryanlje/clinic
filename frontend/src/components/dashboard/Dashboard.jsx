@@ -6,6 +6,7 @@ import { API_URL } from "../../api/config";
 import ExportMedicationModal from "../menu/ExportMedicationModal";
 import ChangePinModal from "../menu/ChangePinModal";
 import ChangeSearchLimitModal from "../menu/ChangeSearchLimitModal";
+import BackupDatabaseModal from "../menu/BackupDatabaseModal";
 
 import { getRecentPatients } from "../../utils/recentPatients";
 
@@ -32,6 +33,8 @@ export default function Dashboard({ onNavigateCreate, onSelectPatient }) {
   const [showExportModal, setShowExportModal] = useState(false);
   const [showPinModal, setShowPinModal] = useState(false);
   const [showLimitModal, setShowLimitModal] = useState(false);
+  const [showBackupModal, setShowBackupModal] = useState(false);
+
   const [recentPatients, setRecentPatients] = useState([]);
 
   const toggleMenu = () => setShowMenu(!showMenu);
@@ -154,7 +157,13 @@ export default function Dashboard({ onNavigateCreate, onSelectPatient }) {
           onSave={(newVal) => setSearchLimit(newVal)}
         />
       )}
-      
+      {showBackupModal && (
+        <BackupDatabaseModal
+          isOpen={true}
+          onClose={() => setShowBackupModal(false)}
+        />
+      )}
+
       <div className="card">
         <div
           style={{
@@ -220,6 +229,17 @@ export default function Dashboard({ onNavigateCreate, onSelectPatient }) {
                     style={{ marginTop: "auto" }} // Pushes it to bottom of sidebar often
                   >
                     🔒 Change Admin PIN
+                  </button>
+
+                  <button
+                    className="menu-item"
+                    onClick={() => {
+                      setShowBackupModal(true); // <--- Update this onClick
+                      setShowMenu(false);
+                    }}
+                    style={{ marginTop: "auto" }}
+                  >
+                    ⬇️ Backup Database
                   </button>
                   {/* Add more <button className="menu-item"> here later */}
                 </div>
@@ -517,7 +537,7 @@ export default function Dashboard({ onNavigateCreate, onSelectPatient }) {
                   borderRadius: "6px",
                   border: "none",
                   fontWeight: "600",
-                  fontSize: "0.9rem"
+                  fontSize: "0.9rem",
                 }}
               >
                 Open
@@ -529,20 +549,30 @@ export default function Dashboard({ onNavigateCreate, onSelectPatient }) {
 
       {recentPatients.length > 0 && (
         <div style={{ marginBottom: "20px" }}>
-          <h4 style={{ color: "#666", marginBottom: "10px", fontSize: "0.9rem", textTransform: "uppercase", letterSpacing: "1px" }}>
+          <h4
+            style={{
+              color: "#666",
+              marginBottom: "10px",
+              fontSize: "0.9rem",
+              textTransform: "uppercase",
+              letterSpacing: "1px",
+            }}
+          >
             Recently Viewed
           </h4>
           <div style={{ display: "flex", gap: "15px", flexWrap: "wrap" }}>
             {recentPatients.map((p) => (
-              <Link 
+              <Link
                 to={`/patient/${p.id}`} // The URL
                 key={p.id}
                 className="recent-card"
-                style={{ textDecoration: 'none', color: 'inherit' }} // Remove default blue underline
+                style={{ textDecoration: "none", color: "inherit" }} // Remove default blue underline
                 onClick={() => onSelectPatient(p)} // Keep the "add to recent" logic refreshing
               >
                 <div className="recent-name">{p.name}</div>
-                <div style={{ fontSize: "0.8rem", color: "#666" }}>ID: {p.display_id}</div>
+                <div style={{ fontSize: "0.8rem", color: "#666" }}>
+                  ID: {p.display_id}
+                </div>
               </Link>
             ))}
           </div>

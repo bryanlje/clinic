@@ -1,13 +1,14 @@
-import os, csv, io, hashlib
-from fastapi import FastAPI, Depends, HTTPException, Query, File, UploadFile
+import os, csv, io, hashlib, subprocess
+from fastapi import FastAPI, Depends, HTTPException, Query, File, UploadFile, BackgroundTasks
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, StreamingResponse
+from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import or_, func, cast, Integer
 from sqlalchemy.orm import Session
 from typing import List, Optional
-from datetime import date
+from datetime import date, datetime
 from uuid import UUID
-from fastapi.middleware.cors import CORSMiddleware
+from urllib.parse import urlparse
 
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4, landscape
@@ -688,6 +689,70 @@ def update_system_config(key: str, payload: schemas.ConfigUpdate, db: Session = 
     db.commit()
     db.refresh(conf)
     return {"status": "updated", "key": key, "value": conf.value}
+
+@app.get("/api/system/backup")
+def download_database_backup(
+    background_tasks: BackgroundTasks, 
+    db: Session = Depends(database.get_db),
+    pin: str = None 
+):
+    """
+    Generates a full database dump using the active database connection details.
+    """    
+    if not pin:
+        raise HTTPException(status_code=401, detail="Admin PIN is required.")
+    
+    stored_config = db.query(models.SystemConfig).filter(models.SystemConfig.key == "admin_pin").first()
+    if not stored_config or not verify_password(pin, stored_config.value):
+        raise HTTPException(status_code=401, detail="Incorrect Admin PIN.")
+    
+    # 1. Get credentials directly from the active SQLAlchemy Engine
+    # This guarantees we use the exact same credentials the app is running on.
+    engine = db.get_bind()
+    url = engine.url
+
+    db_user = url.username
+    db_password = url.password
+    db_host = url.host
+    db_port = str(url.port) if url.port else "5432"
+    db_name = url.database
+
+    # 2. Prepare Backup File Path
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M")
+    filename = f"clinic_backup_{timestamp}.sql"
+    filepath = f"/tmp/{filename}"
+
+    # 3. Prepare Environment for pg_dump
+    env = os.environ.copy()
+    if db_password:
+        env["PGPASSWORD"] = db_password
+
+    # 4. Execute pg_dump
+    try:
+        command = [
+            "pg_dump",
+            "-h", db_host,
+            "-p", db_port, # Added port just in case
+            "-U", db_user,
+            "-d", db_name,
+            "-f", filepath
+        ]
+        
+        subprocess.run(command, env=env, check=True)
+    except subprocess.CalledProcessError as e:
+        print(f"Backup Error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to generate backup. Check server logs.")
+    except FileNotFoundError:
+        # This is the specific error for "pg_dump not installed"
+        raise HTTPException(status_code=500, detail="pg_dump tool not found on server.")
+
+    return FileResponse(
+        path=filepath, 
+        filename=filename, 
+        media_type='application/octet-stream',
+        background=background_tasks.add_task(os.remove, filepath)
+    )
+
 
 # --- SERVE REACT FRONTEND (Production Mode) ---
 # This checks if the 'dist' folder exists (created by 'npm run build')
