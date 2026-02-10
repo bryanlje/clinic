@@ -221,7 +221,15 @@ async def delete_patient(patient_id: str, db: Session = Depends(database.get_db)
         print(f"Warning: Error cleaning up files for patient {patient_id}: {e}")
         # Continue execution - still delete the DB record even if file deletion fails.
 
-    # 3. Delete the Patient Record
+    # 3. CLEANUP: Remove sibling links manually
+    db.execute(models.patient_siblings.delete().where(
+        or_(
+            models.patient_siblings.c.patient_id == patient_id,
+            models.patient_siblings.c.sibling_id == patient_id
+        )
+    ))
+
+    # 4. Delete the Patient Record
     db.delete(patient)
     db.commit()
 
