@@ -60,7 +60,7 @@ export default function CreatePatientForm({ onSuccess, onCancel }) {
     }
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (shouldOpen) => {
     try {
       const payload = {
         ...formData,
@@ -80,11 +80,11 @@ export default function CreatePatientForm({ onSuccess, onCancel }) {
 
       // Capture the response
       const res = await axios.post(`${API_URL}/patients/`, payload);
-      alert("Patient Record Created Successfully");
+      // alert("Patient Record Created Successfully");
 
       // Pass the created patient object (res.data) to onSuccess
       // This allows the parent component to know WHO was created
-      onSuccess(res.data);
+      onSuccess(res.data, shouldOpen);
     } catch (err) {
       console.error(err);
       alert("Error creating patient. Check console for details.");
@@ -650,6 +650,8 @@ export default function CreatePatientForm({ onSuccess, onCancel }) {
               onConfirm={handleSubmit}
               title="Create Patient?"
               message="Please ensure all details are correct before creating this record."
+              optionLabel="Open Patient Details & Add Visit Immediately"
+              defaultOptionState={true}
             >
               Save Patient
             </ConfirmButton>

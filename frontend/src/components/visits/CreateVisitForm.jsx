@@ -4,14 +4,7 @@ import { API_URL } from "../../api/config";
 
 import { calculateVisitAge } from "../../utils/helpers";
 import InputSuggestion from "../common/InputSuggestion";
-
-const FOLLOW_UP_OPTIONS = [
-  "1 week",
-  "3 days",
-  "1 month",
-  "PRN (As needed)",
-  "Referral to Specialist",
-];
+import { FOLLOW_UP_OPTIONS } from "../../utils/constants";
 
 export default function CreateVisitForm({ patientId, patientDOB, onSuccess }) {
   const now = new Date();
@@ -304,6 +297,7 @@ export default function CreateVisitForm({ patientId, patientDOB, onSuccess }) {
             }
             options={FOLLOW_UP_OPTIONS}
             placeholder="Select or type..."
+            num_rows="2"
           />
         </div>
       </div>

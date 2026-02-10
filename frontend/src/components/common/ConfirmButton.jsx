@@ -7,11 +7,16 @@ export default function ConfirmButton({
   title = "Confirm Action",
   message = "Are you sure?",
   requiresPin = false,
+  optionLabel = null,
+  defaultOptionState = true,
   children,
   className,
   ...props
 }) {
   const [isOpen, setIsOpen] = useState(false);
+
+  // Option State (Checkbox)
+  const [isOptionChecked, setIsOptionChecked] = useState(defaultOptionState);
 
   // PIN State
   const [pin, setPin] = useState("");
@@ -31,6 +36,7 @@ export default function ConfirmButton({
     setPin("");
     setError("");
     setLoading(false);
+    setIsOptionChecked(defaultOptionState);
     setIsOpen(true);
   };
 
@@ -38,7 +44,7 @@ export default function ConfirmButton({
     // 1. Standard Mode (No PIN)
     if (!requiresPin) {
       setIsOpen(false);
-      onConfirm();
+      onConfirm(isOptionChecked);
       return;
     }
 
@@ -55,7 +61,7 @@ export default function ConfirmButton({
       await axios.post(`${API_URL}/admin/verify-pin`, { pin });
       // If successful:
       setIsOpen(false);
-      onConfirm();
+      onConfirm(isOptionChecked);
     } catch (err) {
       setError("Incorrect PIN");
       setLoading(false);
@@ -73,6 +79,41 @@ export default function ConfirmButton({
           <div className="modal-box">
             <div className="modal-title">{title}</div>
             <p>{message}</p>
+
+            {/* Optional Checkbox Section */}
+            {optionLabel && (
+              <div
+                style={{
+                  // margin: "15px 0",
+                  // padding: "10px",
+                  // background: "#f8f9fa",
+                  borderRadius: "6px",
+                  // border: "1px solid #eee",
+                }}
+              >
+                <label
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: "10px",
+                    cursor: "pointer",
+                    fontSize: "0.9rem",
+                    fontWeight: "500",
+                    // fontStyle: "italic",
+                    color: "#333",
+                  }}
+                >
+                  <input
+                    type="checkbox"
+                    checked={isOptionChecked}
+                    onChange={(e) => setIsOptionChecked(e.target.checked)}
+                    style={{ width: "18px", height: "18px", cursor: "pointer" }}
+                  />
+                  {optionLabel}
+                </label>
+              </div>
+            )}
 
             {/* PIN Input Section */}
             {requiresPin && (

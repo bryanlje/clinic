@@ -15,13 +15,17 @@ function App() {
   const goHome = () => navigate("/");
 
   // Handle successful creation
-  const handleCreateSuccess = (newPatient) => {
+  const handleCreateSuccess = (newPatient, shouldOpen) => {
     // 1. Add to recent list immediately
     addRecentPatient(newPatient);
 
-    // 2. Navigate to the new patient's page
-    // 3. Pass "state" to tell the next page to open the visit form
-    navigate(`/patient/${newPatient.id}`, { state: { openVisit: true } });
+    if (shouldOpen) {
+        // Option A: User checked the box -> Open Patient & Visit Form
+        navigate(`/patient/${newPatient.id}`, { state: { openVisit: true } });
+    } else {
+        // Option B: User unchecked the box -> Go back to Dashboard
+        goHome();
+    }
   };
 
   return (

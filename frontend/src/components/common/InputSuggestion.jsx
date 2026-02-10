@@ -6,6 +6,7 @@ export default function InputSuggestion({
   onChange,
   options = [],
   placeholder = "Type or select...",
+  num_rows = "1"
 }) {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const wrapperRef = useRef(null);
@@ -40,7 +41,7 @@ export default function InputSuggestion({
         className="input"
         placeholder={placeholder}
         style={{ width: "100%", resize: "vertical" }}
-        rows="1"
+        rows={num_rows}
       />
 
       {showSuggestions && options.length > 0 && (

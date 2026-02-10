@@ -357,7 +357,7 @@ export default function PatientDetailView({
                     <span
                       style={getAllergyStyle(patient.allergies)}
                     >
-                      {patient.allergies || "None"}
+                      {patient.allergies || "-"}
                     </span>
                   }
                 />

@@ -8,7 +8,6 @@ from sqlalchemy.orm import Session
 from typing import List, Optional
 from datetime import date, datetime
 from uuid import UUID
-from urllib.parse import urlparse
 
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4, landscape
@@ -32,6 +31,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 #####################################################
 # --- Helper Functions ---
 #####################################################
