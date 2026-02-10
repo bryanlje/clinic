@@ -135,6 +135,10 @@ select {
   box-sizing: border-box; /* Ensures padding doesn't break width */
 }
 
+textarea {
+  min-height: 38px;
+}
+
 input:focus,
 textarea:focus {
   outline: none;
@@ -406,7 +410,7 @@ button {
   background: #fff;
   border: 1px solid var(--border-light);
   border-radius: 6px;
-  margin-bottom: 10px;
+  margin-bottom: 20px;
   overflow: hidden;
   transition: all 0.2s;
 }
@@ -451,13 +455,6 @@ button {
     opacity: 1;
     transform: translateY(0);
   }
-}
-
-.visit-edit-form textarea {
-  width: 100%;
-  padding: 8px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
 }
 
 .breadcrumb-bar {

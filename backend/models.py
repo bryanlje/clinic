@@ -66,6 +66,7 @@ class Visit(Base):
     weight = Column(Float, nullable=False)
     age_at_visit = Column(String, nullable=True)
     doctor_notes = Column(String, nullable=True)
+    follow_up = Column(String, nullable=True)
 
     # Financial data
     total_charge = Column(Float, nullable=True)

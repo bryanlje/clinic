@@ -13,9 +13,10 @@ export default function PatientDetailView({
   patientId,
   onBack,
   onSelectPatient,
+  initialOpenVisit = false
 }) {
   const [patient, setPatient] = useState(null);
-  const [showVisitForm, setShowVisitForm] = useState(false);
+  const [showVisitForm, setShowVisitForm] = useState(initialOpenVisit);
   const [isEditing, setIsEditing] = useState(false);
   const [editFormData, setEditFormData] = useState({});
   const [showSiblingModal, setShowSiblingModal] = useState(false);
@@ -193,6 +194,22 @@ export default function PatientDetailView({
     );
   };
 
+  // Helper to determine color based on allergy content
+  const getAllergyStyle = (text) => {
+    if (!text || !text.trim()) {
+      return {}; // Default styling (black/grey, normal weight)
+    }
+
+    const lowerText = text.trim().toLowerCase();
+    const safeWords = ["nil", "none", "na", "n/a"];
+
+    if (safeWords.includes(lowerText)) {
+      return { color: "#089e2b", fontWeight: "bold" }; // Green
+    }
+
+    return { color: "#d32f2f", fontWeight: "bold" }; // Red
+  };
+
   return (
     <div>
       <div className="patient-header">
@@ -331,22 +348,14 @@ export default function PatientDetailView({
                 <Row
                   label={
                     <span
-                      style={{
-                        color: patient.allergies !== "" ? "#d32f2f" : "inherit",
-                        fontWeight:
-                          patient.allergies !== "" ? "bold" : "inherit",
-                      }}
+                      style={getAllergyStyle(patient.allergies)}
                     >
                       Allergies
                     </span>
                   }
                   value={
                     <span
-                      style={{
-                        color: patient.allergies !== "" ? "#d32f2f" : "inherit",
-                        fontWeight:
-                          patient.allergies !== "" ? "bold" : "inherit",
-                      }}
+                      style={getAllergyStyle(patient.allergies)}
                     >
                       {patient.allergies || "None"}
                     </span>
@@ -707,12 +716,9 @@ export default function PatientDetailView({
                 value={editFormData.allergies || ""}
                 onChange={handleEditChange}
                 style={{
-                  // If deficient, make text red and bold
-                  color: editFormData.allergies !== "" ? "#d32f2f" : "inherit",
-                  fontWeight: editFormData.allergies !== "" ? "bold" : "normal",
-                  borderWidth: editFormData.allergies !== "" ? "2px" : "1px",
-                  borderColor:
-                    editFormData.allergies !== "" ? "#d32f2f" : "#ccc",
+                  ...getAllergyStyle(editFormData.allergies),
+                  borderColor: getAllergyStyle(editFormData.allergies).color || "eee",
+                  borderWidth: editFormData.allergies ? "2px" : "1px",
                 }}
               />
             </div>

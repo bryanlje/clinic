@@ -3,6 +3,15 @@ import axios from "axios";
 import { API_URL } from "../../api/config";
 import ConfirmButton from "../common/ConfirmButton";
 import { calculateVisitAge } from "../../utils/helpers";
+import InputSuggestion from "../common/InputSuggestion";
+
+const FOLLOW_UP_OPTIONS = [
+  "1 week",
+  "3 days",
+  "1 month",
+  "PRN (As needed)",
+  "Referral to Specialist",
+];
 
 export default function VisitItem({ visit, patientId, patientDOB, onUpdate }) {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -123,6 +132,7 @@ export default function VisitItem({ visit, patientId, patientDOB, onUpdate }) {
         weight: Math.round(parseFloat(editData.weight) * 100) / 100 || 0,
         age_at_visit: editData.age_at_visit, // Preserving the snapshot string
         doctor_notes: editData.doctor_notes || "",
+        follow_up: editData.follow_up || "",
 
         // Financials
         total_charge:
@@ -357,6 +367,15 @@ export default function VisitItem({ visit, patientId, patientDOB, onUpdate }) {
                 >
                   {visit.doctor_notes || "No notes recorded."}
                 </p>
+                <p
+                  style={{
+                    whiteSpace: "pre-wrap",
+                    marginTop: "10px",
+                    color: "#333",
+                  }}
+                >
+                  {visit.follow_up || ""}
+                </p>
               </div>
 
               {/* Medicines */}
@@ -559,6 +578,18 @@ export default function VisitItem({ visit, patientId, patientDOB, onUpdate }) {
                     style={{ resize: "vertical" }}
                   />
                 </div>
+                <div style={{ marginTop: "10px", marginBottom: "5px" }}>
+                  {/* <label>Follow-up</label> */}
+                  <InputSuggestion
+                    name="follow_up"
+                    value={editData.follow_up || ""}
+                    onChange={(e) =>
+                      setEditData({ ...editData, follow_up: e.target.value })
+                    }
+                    options={FOLLOW_UP_OPTIONS}
+                    placeholder="Select or type..."
+                  />
+                </div>
               </div>
 
               {/* Medication Section */}
@@ -620,14 +651,14 @@ export default function VisitItem({ visit, patientId, patientDOB, onUpdate }) {
                   />
                   <input
                     style={{ flex: 1 }}
-                    placeholder="Qty"
+                    placeholder="Quantity"
                     value={medInput.quantity}
                     onChange={(e) =>
                       setMedInput({ ...medInput, quantity: e.target.value })
                     }
                   />
                   <textarea
-                    style={{ flex: 1 }}
+                    style={{ flex: 1, resize: "vertical" }}
                     placeholder="Notes"
                     value={medInput.notes}
                     onChange={(e) =>
@@ -687,7 +718,7 @@ export default function VisitItem({ visit, patientId, patientDOB, onUpdate }) {
                   {/* MANUAL OVERRIDE CHECKBOX */}
                   <label
                     style={{
-                      fontSize: "0.85rem",
+                      fontSize: "0.8rem",
                       display: "flex",
                       alignItems: "center",
                       marginBottom: "0px",

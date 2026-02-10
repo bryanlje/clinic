@@ -11,8 +11,18 @@ function App() {
   const navigate = useNavigate(); // Used to change URL programmatically
   const location = useLocation(); // Used to know where we are
 
-  // Helper to go home (replaces your old goHome function)
+  // Helper to go home
   const goHome = () => navigate("/");
+
+  // Handle successful creation
+  const handleCreateSuccess = (newPatient) => {
+    // 1. Add to recent list immediately
+    addRecentPatient(newPatient);
+
+    // 2. Navigate to the new patient's page
+    // 3. Pass "state" to tell the next page to open the visit form
+    navigate(`/patient/${newPatient.id}`, { state: { openVisit: true } });
+  };
 
   return (
     <div className="container">
@@ -42,7 +52,7 @@ function App() {
                 onNavigateCreate={() => navigate("/create")}
                 onSelectPatient={(patient) => {
                   addRecentPatient(patient);
-                  navigate(`/patient/${patient.id}`); // URL Change!
+                  navigate(`/patient/${patient.id}`); // URL Change
                 }}
               />
             }
@@ -51,7 +61,12 @@ function App() {
           {/* CREATE PATIENT PAGE */}
           <Route
             path="/create"
-            element={<CreatePatientForm onSuccess={goHome} onCancel={goHome} />}
+            element={
+              <CreatePatientForm
+                onSuccess={handleCreateSuccess}
+                onCancel={goHome}
+              />
+            }
           />
 
           {/* PATIENT DETAIL PAGE (Dynamic ID) */}
@@ -73,11 +88,15 @@ import { useParams } from "react-router-dom";
 function PatientDetailWrapper({ onBack }) {
   const { id } = useParams(); // Read ID from URL (e.g. /patient/123)
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const shouldOpenVisit = location.state?.openVisit || false;
 
   return (
     <PatientDetailView
       patientId={id}
       onBack={onBack}
+      initialOpenVisit={shouldOpenVisit}
       // When clicking a sibling, we just navigate to the new URL
       onSelectPatient={(p) => navigate(`/patient/${p.id}`)}
     />

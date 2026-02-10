@@ -3,6 +3,15 @@ import axios from "axios";
 import { API_URL } from "../../api/config";
 
 import { calculateVisitAge } from "../../utils/helpers";
+import InputSuggestion from "../common/InputSuggestion";
+
+const FOLLOW_UP_OPTIONS = [
+  "1 week",
+  "3 days",
+  "1 month",
+  "PRN (As needed)",
+  "Referral to Specialist",
+];
 
 export default function CreateVisitForm({ patientId, patientDOB, onSuccess }) {
   const now = new Date();
@@ -21,6 +30,7 @@ export default function CreateVisitForm({ patientId, patientDOB, onSuccess }) {
     weight: "",
     age_at_visit: calculateVisitAge(patientDOB, todayStr), // Calculated automatically
     doctor_notes: "",
+    follow_up: "",
 
     // Charge Section
     total_charge: "",
@@ -158,6 +168,7 @@ export default function CreateVisitForm({ patientId, patientDOB, onSuccess }) {
         weight: parseFloat(formData.weight) || 0,
         age_at_visit: formData.age_at_visit,
         doctor_notes: formData.doctor_notes,
+        follow_up: formData.follow_up,
 
         total_charge: parseFloat(formData.total_charge) || 0,
         payment_method: formData.payment_method,
@@ -281,6 +292,20 @@ export default function CreateVisitForm({ patientId, patientDOB, onSuccess }) {
             style={{ resize: "vertical" }}
           />
         </div>
+
+        {/* Follow-up Dropdown */}
+        <div style={{ marginTop: "10px", marginBottom: "5px" }}>
+          {/* <label>Follow-up</label> */}
+          <InputSuggestion
+            name="follow_up"
+            value={formData.follow_up}
+            onChange={(e) =>
+              setFormData({ ...formData, follow_up: e.target.value })
+            }
+            options={FOLLOW_UP_OPTIONS}
+            placeholder="Select or type..."
+          />
+        </div>
       </div>
 
       {/* Medication Section */}
@@ -360,7 +385,7 @@ export default function CreateVisitForm({ patientId, patientDOB, onSuccess }) {
             }
           />
           <textarea
-            style={{ flex: 2 }}
+            style={{ flex: 2, resize: "vertical" }}
             placeholder="Notes"
             value={medInput.notes}
             onChange={(e) =>
@@ -418,7 +443,7 @@ export default function CreateVisitForm({ patientId, patientDOB, onSuccess }) {
 
           <label
             style={{
-              fontSize: "0.85rem",
+              fontSize: "0.8rem",
               display: "flex",
               alignItems: "center",
               gap: "5px",

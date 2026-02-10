@@ -359,6 +359,7 @@ def update_visit(visit_id: int, visit_update: schemas.VisitUpdate, db: Session =
     db_visit.weight = visit_update.weight
     db_visit.age_at_visit = visit_update.age_at_visit
     db_visit.doctor_notes = visit_update.doctor_notes
+    db_visit.follow_up = visit_update.follow_up
     
     # Financial Updates
     db_visit.total_charge = visit_update.total_charge

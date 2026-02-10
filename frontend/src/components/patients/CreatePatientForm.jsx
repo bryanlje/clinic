@@ -75,12 +75,16 @@ export default function CreatePatientForm({ onSuccess, onCancel }) {
           ? parseInt(formData.birth_ofc_cm)
           : null,
         tsh_mlul: formData.tsh_mlul ? parseInt(formData.tsh_mlul) : null,
-        sibling_ids: siblings.map(s => s.id)
+        sibling_ids: siblings.map((s) => s.id),
       };
 
-      await axios.post(`${API_URL}/patients/`, payload);
+      // Capture the response
+      const res = await axios.post(`${API_URL}/patients/`, payload);
       alert("Patient Record Created Successfully");
-      onSuccess();
+
+      // Pass the created patient object (res.data) to onSuccess
+      // This allows the parent component to know WHO was created
+      onSuccess(res.data);
     } catch (err) {
       console.error(err);
       alert("Error creating patient. Check console for details.");
@@ -286,26 +290,65 @@ export default function CreatePatientForm({ onSuccess, onCancel }) {
             />
           </div>
           <div style={{ marginTop: "20px" }}>
-            <label style={{display: 'block', marginBottom: '10px'}}>Siblings (Optional)</label>
-            
-            <div style={{display: 'flex', gap: '10px', flexWrap: 'wrap', marginBottom: '10px'}}>
-                {siblings.map(sib => (
-                    <div key={sib.id} style={{
-                        background: '#e3f2fd', padding: '5px 12px', borderRadius: '8px',
-                        display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.8rem',
-                        border: '1px solid #90caf9'
-                    }}>
-                        <span style={{fontWeight: 'bold', color: '#1565c0'}}>{sib.name}</span>
-                        <span style={{color: '#555'}}>({sib.display_id})</span>
-                        <button type="button" onClick={() => setSiblings(siblings.filter(s => s.id !== sib.id))} 
-                            style={{border: 'none', background: 'none', cursor: 'pointer', color: '#d32f2f', fontWeight: 'bold', fontSize: '1.5rem', lineHeight: '1', padding: "2px 5px"}}>×
-                        </button>
-                    </div>
-                ))}
-                
-                <button type="button" className="btn-secondary" onClick={() => setShowSiblingModal(true)} style={{fontSize: '0.8rem', padding: '10px 15px'}}>
-                    + Add Sibling Link
-                </button>
+            <label style={{ display: "block", marginBottom: "10px" }}>
+              Siblings (Optional)
+            </label>
+
+            <div
+              style={{
+                display: "flex",
+                gap: "10px",
+                flexWrap: "wrap",
+                marginBottom: "10px",
+              }}
+            >
+              {siblings.map((sib) => (
+                <div
+                  key={sib.id}
+                  style={{
+                    background: "#e3f2fd",
+                    padding: "5px 12px",
+                    borderRadius: "8px",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                    fontSize: "0.8rem",
+                    border: "1px solid #90caf9",
+                  }}
+                >
+                  <span style={{ fontWeight: "bold", color: "#1565c0" }}>
+                    {sib.name}
+                  </span>
+                  <span style={{ color: "#555" }}>({sib.display_id})</span>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setSiblings(siblings.filter((s) => s.id !== sib.id))
+                    }
+                    style={{
+                      border: "none",
+                      background: "none",
+                      cursor: "pointer",
+                      color: "#d32f2f",
+                      fontWeight: "bold",
+                      fontSize: "1.5rem",
+                      lineHeight: "1",
+                      padding: "2px 5px",
+                    }}
+                  >
+                    ×
+                  </button>
+                </div>
+              ))}
+
+              <button
+                type="button"
+                className="btn-secondary"
+                onClick={() => setShowSiblingModal(true)}
+                style={{ fontSize: "0.8rem", padding: "10px 15px" }}
+              >
+                + Add Sibling Link
+              </button>
             </div>
           </div>
         </div>
@@ -619,16 +662,15 @@ export default function CreatePatientForm({ onSuccess, onCancel }) {
       </form>
 
       {/* SIBLING MODAL */}
-      <SiblingSearchModal 
+      <SiblingSearchModal
         isOpen={showSiblingModal}
         onClose={() => setShowSiblingModal(false)}
         onSelect={(newSib) => {
-            if (!siblings.find(s => s.id === newSib.id)) {
-                setSiblings([...siblings, newSib]);
-            }
+          if (!siblings.find((s) => s.id === newSib.id)) {
+            setSiblings([...siblings, newSib]);
+          }
         }}
       />
-
     </div>
   );
 }

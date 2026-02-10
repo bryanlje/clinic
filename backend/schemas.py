@@ -28,6 +28,7 @@ class VisitBase(BaseModel):
     weight: float
     age_at_visit: Optional[str] = None
     doctor_notes: Optional[str] = None
+    follow_up: Optional[str] = None
     
     # Financials
     total_charge: Optional[float] = None
