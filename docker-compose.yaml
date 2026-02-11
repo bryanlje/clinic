@@ -1,30 +1,40 @@
-version: '3.8'
-
 services:
-  backend:
-    build: ./backend      # <--- Looks inside the backend folder for a Dockerfile
+  # The Database Service
+  clinic-db:
+    image: postgres:16
+    container_name: clinic-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_PASSWORD: leongclinic
+    volumes:
+      # Named volume for DB data persistence
+      - clinic_db_data:/var/lib/postgresql/data
+    networks:
+      - clinic-net
+
+  # The App Service
+  clinic-app:
+    image: mulberrydunes/leong-clinic:2.3  # <--- Change this to update versions
+    container_name: clinic-app
+    restart: unless-stopped
     ports:
       - "8000:8000"
-    volumes:
-      - ./backend:/app
-      - ./uploads:/app/uploads # <--- Maps root uploads folder to container
     environment:
-      - DATABASE_URL=postgresql://postgres:leongclinic@localhost:5432/postgres
       - ENVIRONMENT=local
-
-  frontend:
-    build: ./frontend     # <--- Looks inside the frontend folder for a Dockerfile
-    ports:
-      - "5173:5173"
+      - DATABASE_URL=postgresql://postgres:leongclinic@clinic-db:5432/postgres
     volumes:
-      - ./frontend:/app
-      - /app/node_modules
-    stdin_open: true      # Fixes potential React exit bugs
+      # HOST_PATH : CONTAINER_PATH
+      # UPDATE THIS PATH for the specific computer you are deploying to
+      - "/mnt/c/Users/filepath/to/attachment_uploads:/app/backend/uploads"
+    depends_on:
+      - clinic-db
+    networks:
+      - clinic-net
 
-  db:
-    image: postgres:18
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-
+# Define the persistent volume for the DB
 volumes:
-  postgres_data:
+  clinic_db_data:
+
+# Define the network
+networks:
+  clinic-net:
