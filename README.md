@@ -66,7 +66,35 @@ A full-stack clinic management application designed for paediatric care. This sy
 * Docker
 * (Optional for local dev) Node.js v18+ and Python 3.11+
 
-### Option A: Running with Docker (Recommended)
+### Option A: Running with Docker Compose (Recommended)
+This is the easiest and most reliable method. It automatically sets up the database, the application, and the network configuration using a single file.
+
+1. **Prepare the Compose File**: Clone this repository or copy the contents of docker-compose.yaml.
+
+- Important: Update the volume path "/mnt/c/Users/..." to the actual folder on your computer where you want to store uploaded patient documents.
+
+2. **Start the Application**: Run this command in the same folder as your yaml file:
+```bash
+docker compose up -d
+```
+- You can now access the app at http://localhost:8000
+3. **Stop the Application**: To stop the containers but keep your data safe:
+```bash
+docker compose down
+```
+4. **Restore Database from Backup (Optional)**: If you have a .sql backup file (e.g., backup.sql) and want to load it into the running database:
+```bash
+# 1. Copy the file into the container
+docker cp ./backup.sql clinic-db:/tmp/restore.sql
+
+# 2. Execute the restore command
+docker exec -it clinic-db psql -U postgres -d postgres -f /tmp/restore.sql
+
+# 3. Optional: Delete the file from inside the container to save space
+docker exec clinic-db rm /tmp/restore.sql
+```
+
+### Option B: Running with Docker Commands (Manual)
 
 This will set up the Database, Backend, and Frontend in two simple commands.
 
@@ -113,7 +141,7 @@ docker run -d \
 
 
 
-### Option B: Local Development (Manual)
+### Option C: Local Development (Manual)
 
 **1. Database Setup**
 Ensure you have a PostgreSQL instance running and update `backend/database.py` or your `.env` file with the connection string.
